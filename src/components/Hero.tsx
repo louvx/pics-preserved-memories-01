@@ -19,9 +19,9 @@ const Hero = () => {
             <Button 
               size="lg" 
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
-              onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => document.getElementById('upload')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              Start Restoration
+              Try It Now
             </Button>
             <Button 
               variant="outline" 
