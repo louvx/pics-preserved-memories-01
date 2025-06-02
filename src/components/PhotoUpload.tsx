@@ -150,7 +150,7 @@ const PhotoUpload = () => {
 
               {/* Action buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                {!uploadedImage.processed && !isProcessing && <Button onClick={simulateRestoration} size="lg" className="bg-blue-600 hover:bg-blue-700">
+                {!uploadedImage.processed && !isProcessing && <Button onClick={simulateRestoration} size="lg" className="bg-amber 600 hover:bg-blue-700">
                     Start Restoration
                   </Button>}
                 
