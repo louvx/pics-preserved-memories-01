@@ -89,9 +89,9 @@ const Testimonials = () => {
 
         <div className="text-center mt-12">
           <p className="text-lg text-gray-600 mb-4">Ready to restore your precious memories?</p>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors" onClick={() => document.getElementById('services')?.scrollIntoView({
+          <button onClick={() => document.getElementById('services')?.scrollIntoView({
           behavior: 'smooth'
-        })}>
+        })} className="text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors bg-amber-700 hover:bg-amber-600">
             Get Started Today
           </button>
         </div>

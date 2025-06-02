@@ -93,12 +93,8 @@ const PhotoUpload = () => {
   return <section id="upload" className="bg-gradient-to-br from-orange-50 to-amber-50 py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Try Our Restoration Service
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Upload your photo and see the magic happen. Get a preview of our AI restoration technology.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">See Your Photo Restored – In Seconds!</h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Upload an image and instantly preview our AI's restoration power. </p>
         </div>
 
         <div className="bg-white rounded-xl shadow-lg p-8">

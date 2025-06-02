@@ -20,12 +20,8 @@ const BeforeAfterGallery = () => {
   return <section id="gallery" className="bg-gradient-to-br from-orange-50 to-amber-50 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            See the Magic in Action
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Witness the transformation of damaged photos into beautiful memories. Our restoration process brings life back to your treasured moments.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Restoration in Action</h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">See damaged photos become treasured memories!</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -67,7 +63,7 @@ const BeforeAfterGallery = () => {
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Why Choose Our Restoration?</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Why We're Different:</h3>
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-blue-600 rounded-full mr-3"></span>
