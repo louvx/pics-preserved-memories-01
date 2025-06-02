@@ -165,9 +165,7 @@ const PhotoUpload = () => {
               </div>
 
               {uploadedImage.processed && <div className="mt-6 p-4 bg-blue-50 rounded-lg text-center">
-                  <p className="text-blue-800 font-medium">
-                    Love the results? Choose a service package above for full-quality restoration!
-                  </p>
+                  <p className="text-blue-800 font-medium">Love the results? Choose a service package below for full-quality restoration!</p>
                 </div>}
             </div>}
         </div>
