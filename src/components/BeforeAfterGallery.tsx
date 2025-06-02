@@ -1,23 +1,32 @@
+
 import React, { useState } from 'react';
+
 const BeforeAfterGallery = () => {
   const [activeImage, setActiveImage] = useState(0);
-  const examples = [{
-    before: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop&auto=format&sepia=100&brightness=0.7",
-    after: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop&auto=format",
-    title: "Family Portrait Restoration",
-    description: "Removed scratches and restored faded colors"
-  }, {
-    before: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop&auto=format&sepia=100&brightness=0.6",
-    after: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop&auto=format",
-    title: "Vintage Photo Enhancement",
-    description: "Enhanced details and corrected color balance"
-  }, {
-    before: "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=400&h=300&fit=crop&auto=format&sepia=100&brightness=0.5",
-    after: "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=400&h=300&fit=crop&auto=format",
-    title: "Wedding Memory Restoration",
-    description: "Restored damaged areas and improved clarity"
-  }];
-  return <section id="gallery" className="py-20 bg-[#fdfbd4]">
+
+  const examples = [
+    {
+      before: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop&auto=format&sepia=100&brightness=0.7",
+      after: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop&auto=format",
+      title: "Family Portrait Restoration",
+      description: "Removed scratches and restored faded colors"
+    },
+    {
+      before: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop&auto=format&sepia=100&brightness=0.6",
+      after: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop&auto=format",
+      title: "Vintage Photo Enhancement",
+      description: "Enhanced details and corrected color balance"
+    },
+    {
+      before: "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=400&h=300&fit=crop&auto=format&sepia=100&brightness=0.5",
+      after: "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=400&h=300&fit=crop&auto=format",
+      title: "Wedding Memory Restoration",
+      description: "Restored damaged areas and improved clarity"
+    }
+  ];
+
+  return (
+    <section id="gallery" className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -35,7 +44,11 @@ const BeforeAfterGallery = () => {
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">Before</h3>
                 <div className="relative overflow-hidden rounded-lg shadow-lg">
-                  <img src={examples[activeImage].before} alt="Before restoration" className="w-full h-64 object-cover" />
+                  <img 
+                    src={examples[activeImage].before} 
+                    alt="Before restoration"
+                    className="w-full h-64 object-cover"
+                  />
                   <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm">
                     Damaged
                   </div>
@@ -44,7 +57,11 @@ const BeforeAfterGallery = () => {
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">After</h3>
                 <div className="relative overflow-hidden rounded-lg shadow-lg">
-                  <img src={examples[activeImage].after} alt="After restoration" className="w-full h-64 object-cover" />
+                  <img 
+                    src={examples[activeImage].after} 
+                    alt="After restoration"
+                    className="w-full h-64 object-cover"
+                  />
                   <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-sm">
                     Restored
                   </div>
@@ -61,9 +78,19 @@ const BeforeAfterGallery = () => {
           {/* Thumbnails and Info */}
           <div className="space-y-6">
             <div className="grid grid-cols-3 gap-4">
-              {examples.map((example, index) => <button key={index} onClick={() => setActiveImage(index)} className={`relative overflow-hidden rounded-lg ${activeImage === index ? 'ring-4 ring-blue-500' : 'hover:ring-2 hover:ring-blue-300'} transition-all`}>
-                  <img src={example.after} alt={example.title} className="w-full h-20 object-cover" />
-                </button>)}
+              {examples.map((example, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveImage(index)}
+                  className={`relative overflow-hidden rounded-lg ${activeImage === index ? 'ring-4 ring-blue-500' : 'hover:ring-2 hover:ring-blue-300'} transition-all`}
+                >
+                  <img 
+                    src={example.after} 
+                    alt={example.title}
+                    className="w-full h-20 object-cover"
+                  />
+                </button>
+              ))}
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -90,6 +117,8 @@ const BeforeAfterGallery = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default BeforeAfterGallery;
