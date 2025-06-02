@@ -1,34 +1,166 @@
 
 import React, { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // This would come from your auth system
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-blue-900">Restore.pics</h1>
+            <a href="/" className="flex items-center">
+              <h1 className="text-2xl font-bold text-gray-900">Restore.pics</h1>
+            </a>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            <a href="#services" className="text-gray-700 hover:text-blue-600 transition-colors">Services</a>
-            <a href="#upload" className="text-gray-700 hover:text-blue-600 transition-colors">Try It</a>
-            <a href="#gallery" className="text-gray-700 hover:text-blue-600 transition-colors">Gallery</a>
-            <a href="#how-it-works" className="text-gray-700 hover:text-blue-600 transition-colors">How It Works</a>
-            <a href="#testimonials" className="text-gray-700 hover:text-blue-600 transition-colors">Reviews</a>
-            <a href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors">Contact</a>
+          <nav className="hidden lg:flex items-center space-x-8">
+            <a 
+              href="#how-it-works" 
+              className="text-gray-700 hover:text-amber-700 transition-colors font-medium"
+            >
+              How It Works
+            </a>
+            <a 
+              href="#services" 
+              className="text-gray-700 hover:text-amber-700 transition-colors font-medium"
+            >
+              Pricing
+            </a>
+            <a 
+              href="#gallery" 
+              className="text-gray-700 hover:text-amber-700 transition-colors font-medium"
+            >
+              Examples
+            </a>
+            <a 
+              href="#faq" 
+              className="text-gray-700 hover:text-amber-700 transition-colors font-medium"
+            >
+              FAQ
+            </a>
           </nav>
 
+          {/* Right side - User Account & CTA */}
+          <div className="hidden lg:flex items-center space-x-4">
+            {/* User Account Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="flex items-center space-x-1 text-gray-700 hover:text-amber-700 hover:bg-amber-50"
+                >
+                  <User size={20} />
+                  <ChevronDown size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200">
+                {!isLoggedIn ? (
+                  <>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
+                      Login
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
+                      Register
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
+                      My Photos
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
+                      Account Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="cursor-pointer hover:bg-red-50 text-red-600"
+                      onClick={() => setIsLoggedIn(false)}
+                    >
+                      Logout
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Primary CTA Button */}
+            <Button 
+              className="bg-amber-700 hover:bg-amber-800 text-white font-medium px-6 py-2 shadow-sm"
+              onClick={() => document.getElementById('upload')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Restore Your Photos
+            </Button>
+          </div>
+
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="lg:hidden flex items-center space-x-2">
+            {/* Mobile User Icon */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-gray-700 hover:text-amber-700 hover:bg-amber-50"
+                >
+                  <User size={20} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200">
+                {!isLoggedIn ? (
+                  <>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
+                      Login
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
+                      Register
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
+                      My Photos
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
+                      Account Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="cursor-pointer hover:bg-red-50 text-red-600"
+                      onClick={() => setIsLoggedIn(false)}
+                    >
+                      Logout
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-blue-600"
+              className="text-gray-700 hover:text-amber-700 transition-colors"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -37,14 +169,47 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden pb-4">
+          <div className="lg:hidden pb-4 border-t border-gray-200 mt-4 pt-4">
             <nav className="flex flex-col space-y-4">
-              <a href="#services" className="text-gray-700 hover:text-blue-600 transition-colors">Services</a>
-              <a href="#upload" className="text-gray-700 hover:text-blue-600 transition-colors">Try It</a>
-              <a href="#gallery" className="text-gray-700 hover:text-blue-600 transition-colors">Gallery</a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-blue-600 transition-colors">How It Works</a>
-              <a href="#testimonials" className="text-gray-700 hover:text-blue-600 transition-colors">Reviews</a>
-              <a href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors">Contact</a>
+              <a 
+                href="#how-it-works" 
+                className="text-gray-700 hover:text-amber-700 transition-colors font-medium py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                How It Works
+              </a>
+              <a 
+                href="#services" 
+                className="text-gray-700 hover:text-amber-700 transition-colors font-medium py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Pricing
+              </a>
+              <a 
+                href="#gallery" 
+                className="text-gray-700 hover:text-amber-700 transition-colors font-medium py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Examples
+              </a>
+              <a 
+                href="#faq" 
+                className="text-gray-700 hover:text-amber-700 transition-colors font-medium py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                FAQ
+              </a>
+              <div className="pt-4 border-t border-gray-200">
+                <Button 
+                  className="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    document.getElementById('upload')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Restore Your Photos
+                </Button>
+              </div>
             </nav>
           </div>
         )}
