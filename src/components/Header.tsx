@@ -71,17 +71,21 @@ const Header = () => {
                 {!isLoggedIn ? (
                   <>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
-                      Login
+                      <Link to="/login" className="w-full">
+                        Login
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
-                      Register
+                      <Link to="/login" className="w-full">
+                        Register
+                      </Link>
                     </DropdownMenuItem>
                   </>
                 ) : (
                   <>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
                       <Link to="/results" className="w-full">
-                        My Restorations
+                        My Account
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
@@ -129,17 +133,21 @@ const Header = () => {
                 {!isLoggedIn ? (
                   <>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
-                      Login
+                      <Link to="/login" className="w-full">
+                        Login
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
-                      Register
+                      <Link to="/login" className="w-full">
+                        Register
+                      </Link>
                     </DropdownMenuItem>
                   </>
                 ) : (
                   <>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
                       <Link to="/results" className="w-full">
-                        My Restorations
+                        My Account
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
