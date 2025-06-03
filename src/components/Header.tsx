@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Menu, X, User, ChevronDown } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,17 +13,17 @@ import {
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // This would come from your auth system
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <div className="flex items-center">
-            <a href="/" className="flex items-center">
+            <Link to="/" className="flex items-center">
               <h1 className="text-2xl font-bold text-gray-900">Restore.pics</h1>
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -39,12 +40,12 @@ const Header = () => {
             >
               Pricing
             </a>
-            <a 
-              href="#gallery" 
+            <Link 
+              to="/blog" 
               className="text-gray-700 hover:text-amber-700 transition-colors font-medium"
             >
-              Examples
-            </a>
+              Case Studies
+            </Link>
             <a 
               href="#faq" 
               className="text-gray-700 hover:text-amber-700 transition-colors font-medium"
@@ -169,7 +170,7 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="lg:hidden pb-4 border-t border-gray-200 mt-4 pt-4">
+          <div className="lg:hidden pb-4 border-t border-gray-100 mt-4 pt-4">
             <nav className="flex flex-col space-y-4">
               <a 
                 href="#how-it-works" 
@@ -185,13 +186,13 @@ const Header = () => {
               >
                 Pricing
               </a>
-              <a 
-                href="#gallery" 
+              <Link 
+                to="/blog" 
                 className="text-gray-700 hover:text-amber-700 transition-colors font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Examples
-              </a>
+                Case Studies
+              </Link>
               <a 
                 href="#faq" 
                 className="text-gray-700 hover:text-amber-700 transition-colors font-medium py-2"
@@ -199,7 +200,7 @@ const Header = () => {
               >
                 FAQ
               </a>
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-gray-100">
                 <Button 
                   className="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium"
                   onClick={() => {
