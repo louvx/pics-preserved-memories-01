@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Menu, X, User, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -81,7 +80,9 @@ const Header = () => {
                 ) : (
                   <>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
-                      My Photos
+                      <Link to="/results" className="w-full">
+                        My Restorations
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
                       Dashboard
@@ -137,7 +138,9 @@ const Header = () => {
                 ) : (
                   <>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
-                      My Photos
+                      <Link to="/results" className="w-full">
+                        My Restorations
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
                       Dashboard
