@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -145,17 +144,15 @@ const Login = () => {
               </div>
             </div>
 
-            <Tabs defaultValue="upload" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-                <TabsTrigger value="upload">Upload Photos</TabsTrigger>
+            {/* Photo Upload Section - Always visible for logged-in users */}
+            <div className="max-w-4xl mx-auto mb-12">
+              <PhotoUpload />
+            </div>
+
+            <Tabs defaultValue="results" className="w-full">
+              <TabsList className="grid w-full grid-cols-1 max-w-md mx-auto">
                 <TabsTrigger value="results">My Restorations</TabsTrigger>
               </TabsList>
-              
-              <TabsContent value="upload" className="mt-8">
-                <div className="max-w-4xl mx-auto">
-                  <PhotoUpload />
-                </div>
-              </TabsContent>
               
               <TabsContent value="results" className="mt-8">
                 {restorations.length === 0 ? (
@@ -163,17 +160,8 @@ const Login = () => {
                     <div className="bg-white rounded-lg shadow-md p-8 max-w-md mx-auto">
                       <h3 className="text-xl font-semibold text-gray-900 mb-4">No restorations yet</h3>
                       <p className="text-gray-600 mb-6">
-                        Upload your first photo to see your restoration results here.
+                        Upload your first photo above to see your restoration results here.
                       </p>
-                      <Button 
-                        className="bg-amber-700 hover:bg-amber-800"
-                        onClick={() => {
-                          const uploadTab = document.querySelector('[value="upload"]') as HTMLElement;
-                          uploadTab?.click();
-                        }}
-                      >
-                        Start Your First Restoration
-                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -272,16 +260,6 @@ const Login = () => {
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Button className="bg-amber-700 hover:bg-amber-800" size="lg">
                           View Pricing Plans
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="lg"
-                          onClick={() => {
-                            const uploadTab = document.querySelector('[value="upload"]') as HTMLElement;
-                            uploadTab?.click();
-                          }}
-                        >
-                          Try Another Photo
                         </Button>
                       </div>
                     </div>
