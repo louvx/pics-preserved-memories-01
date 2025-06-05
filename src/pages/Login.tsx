@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,9 @@ import { Download, Crown, Eye, EyeOff } from 'lucide-react';
 import PhotoUpload from '@/components/PhotoUpload';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import SocialLoginButtons from '@/components/SocialLoginButtons';
+import { supabase } from '@/integrations/supabase/client';
+import type { User, Session } from '@supabase/supabase-js';
 
 const Login = () => {
   const [loginEmail, setLoginEmail] = useState('');
@@ -17,7 +20,8 @@ const Login = () => {
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const { toast } = useToast();
 
   // Mock restoration data for logged-in users
@@ -42,7 +46,32 @@ const Login = () => {
 
   const [remainingRestorations] = useState(0);
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Set up auth state listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (event === 'SIGNED_IN') {
+          toast({
+            title: "Login successful",
+            description: "Welcome! You can now view your restoration results."
+          });
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [toast]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginEmail || !loginPassword) {
       toast({
@@ -53,14 +82,21 @@ const Login = () => {
       return;
     }
     
-    setIsLoggedIn(true);
-    toast({
-      title: "Login successful",
-      description: "Welcome back! You can now view your restoration results."
+    const { error } = await supabase.auth.signInWithPassword({
+      email: loginEmail,
+      password: loginPassword,
     });
+
+    if (error) {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!registerName || !registerEmail || !registerPassword || !confirmPassword) {
       toast({
@@ -80,11 +116,45 @@ const Login = () => {
       return;
     }
     
-    setIsLoggedIn(true);
-    toast({
-      title: "Account created",
-      description: "Welcome! You can now upload photos for restoration."
+    const { error } = await supabase.auth.signUp({
+      email: registerEmail,
+      password: registerPassword,
+      options: {
+        data: {
+          full_name: registerName,
+        },
+        emailRedirectTo: `${window.location.origin}/login`
+      }
     });
+
+    if (error) {
+      toast({
+        title: "Registration failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Account created",
+        description: "Please check your email to verify your account."
+      });
+    }
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Sign out failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out."
+      });
+    }
   };
 
   const handleDownload = (restoration: any) => {
@@ -109,7 +179,7 @@ const Login = () => {
     });
   };
 
-  if (isLoggedIn) {
+  if (user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
         <Header />
@@ -118,9 +188,14 @@ const Login = () => {
         <section className="bg-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                My Account
-              </h1>
+              <div className="flex justify-between items-center mb-6">
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+                  My Account
+                </h1>
+                <Button onClick={handleSignOut} variant="outline">
+                  Sign Out
+                </Button>
+              </div>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
                 Manage your restorations and upload new photos
               </p>
@@ -338,6 +413,8 @@ const Login = () => {
                           Sign In
                         </Button>
                       </form>
+                      
+                      <SocialLoginButtons />
                     </TabsContent>
                     
                     <TabsContent value="register" className="space-y-4">
@@ -390,6 +467,8 @@ const Login = () => {
                           Create Account
                         </Button>
                       </form>
+                      
+                      <SocialLoginButtons />
                     </TabsContent>
                   </Tabs>
                 </CardContent>
