@@ -29,7 +29,7 @@ const Hero = () => {
           <div className="mb-8">
             <Button size="lg" onClick={() => document.getElementById('upload')?.scrollIntoView({
             behavior: 'smooth'
-          })} className="bg-amber-700 hover:bg-amber-800 text-white py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 px-[52px]">Restore Photo Now</Button>
+          })} className="bg-amber-700 hover:bg-amber-800 text-white py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 px-[52px]">Try For Free</Button>
           </div>
 
           {/* Supporting Trust Snippets */}
