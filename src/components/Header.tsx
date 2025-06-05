@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Menu, X, User, ChevronDown } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { Menu, X, User, ChevronDown, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,10 +10,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { supabase } from '@/integrations/supabase/client';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [remainingRestorations, setRemainingRestorations] = useState(3); // Default free restorations
+
+  useEffect(() => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        if (event === 'SIGNED_OUT') {
+          setRemainingRestorations(3); // Reset to default when signed out
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
@@ -53,8 +80,21 @@ const Header = () => {
             </a>
           </nav>
 
-          {/* Right side - User Account & CTA */}
+          {/* Right side - Credits & User Account & CTA */}
           <div className="hidden lg:flex items-center space-x-4">
+            {/* Restoration Credits - Only show when logged in */}
+            {user && (
+              <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                <Crown className="h-4 w-4 text-amber-600" />
+                <span className="font-medium text-amber-800 text-sm">
+                  {remainingRestorations > 0 
+                    ? `${remainingRestorations} Restoration${remainingRestorations > 1 ? 's' : ''} Left`
+                    : 'No Restorations Left'
+                  }
+                </span>
+              </div>
+            )}
+
             {/* User Account Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -68,7 +108,7 @@ const Header = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200">
-                {!isLoggedIn ? (
+                {!user ? (
                   <>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
                       <Link to="/login" className="w-full">
@@ -84,7 +124,7 @@ const Header = () => {
                 ) : (
                   <>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
-                      <Link to="/results" className="w-full">
+                      <Link to="/login" className="w-full">
                         My Account
                       </Link>
                     </DropdownMenuItem>
@@ -98,7 +138,7 @@ const Header = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       className="cursor-pointer hover:bg-red-50 text-red-600"
-                      onClick={() => setIsLoggedIn(false)}
+                      onClick={handleSignOut}
                     >
                       Logout
                     </DropdownMenuItem>
@@ -118,6 +158,16 @@ const Header = () => {
 
           {/* Mobile menu button */}
           <div className="lg:hidden flex items-center space-x-2">
+            {/* Mobile Credits - Only show when logged in */}
+            {user && (
+              <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
+                <Crown className="h-3 w-3 text-amber-600" />
+                <span className="font-medium text-amber-800 text-xs">
+                  {remainingRestorations}
+                </span>
+              </div>
+            )}
+
             {/* Mobile User Icon */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -130,7 +180,7 @@ const Header = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200">
-                {!isLoggedIn ? (
+                {!user ? (
                   <>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
                       <Link to="/login" className="w-full">
@@ -146,7 +196,7 @@ const Header = () => {
                 ) : (
                   <>
                     <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
-                      <Link to="/results" className="w-full">
+                      <Link to="/login" className="w-full">
                         My Account
                       </Link>
                     </DropdownMenuItem>
@@ -160,7 +210,7 @@ const Header = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       className="cursor-pointer hover:bg-red-50 text-red-600"
-                      onClick={() => setIsLoggedIn(false)}
+                      onClick={handleSignOut}
                     >
                       Logout
                     </DropdownMenuItem>
