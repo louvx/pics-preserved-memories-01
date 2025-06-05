@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import SocialLoginButtons from '@/components/SocialLoginButtons';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
+import { useUserCredits } from '@/hooks/useUserCredits';
 
 const Login = () => {
   const [loginEmail, setLoginEmail] = useState('');
@@ -23,6 +24,7 @@ const Login = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const { toast } = useToast();
+  const { remainingRestorations } = useUserCredits(user);
 
   // Mock restoration data for logged-in users
   const [restorations] = useState([
@@ -43,8 +45,6 @@ const Login = () => {
       filename: "wedding_1955.jpg"
     }
   ]);
-
-  const [remainingRestorations] = useState(0);
 
   // Set up auth state listener
   useEffect(() => {

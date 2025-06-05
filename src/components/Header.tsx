@@ -12,11 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useUserCredits } from '@/hooks/useUserCredits';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [remainingRestorations, setRemainingRestorations] = useState(3); // Default free restorations
+  const { remainingRestorations, loading } = useUserCredits(user);
 
   useEffect(() => {
     // Check for existing session
@@ -28,9 +29,6 @@ const Header = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
-        if (event === 'SIGNED_OUT') {
-          setRemainingRestorations(3); // Reset to default when signed out
-        }
       }
     );
 
@@ -83,7 +81,7 @@ const Header = () => {
           {/* Right side - Credits & User Account & CTA */}
           <div className="hidden lg:flex items-center space-x-4">
             {/* Restoration Credits - Only show when logged in */}
-            {user && (
+            {user && !loading && (
               <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                 <Crown className="h-4 w-4 text-amber-600" />
                 <span className="font-medium text-amber-800 text-sm">
@@ -159,7 +157,7 @@ const Header = () => {
           {/* Mobile menu button */}
           <div className="lg:hidden flex items-center space-x-2">
             {/* Mobile Credits - Only show when logged in */}
-            {user && (
+            {user && !loading && (
               <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
                 <Crown className="h-3 w-3 text-amber-600" />
                 <span className="font-medium text-amber-800 text-xs">
