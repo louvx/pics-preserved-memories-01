@@ -1,12 +1,12 @@
 
 import React, { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Upload, Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserCredits } from '@/hooks/useUserCredits';
-import BeforeAfterSlider from './BeforeAfterSlider';
+import PhotoUploadArea from './PhotoUploadArea';
+import PhotoPreview from './PhotoPreview';
+import ActionButtons from './ActionButtons';
+import UpgradePrompt from './UpgradePrompt';
 
 interface UploadedImage {
   file: File;
@@ -194,120 +194,29 @@ const PhotoUpload = () => {
 
         <div className="bg-white rounded-xl shadow-lg p-8">
           {!uploadedImage ? (
-            // Upload section
-            <div className="text-center">
-              <div 
-                className="border-2 border-dashed border-gray-300 rounded-lg p-12 hover:border-blue-400 transition-colors cursor-pointer" 
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Upload your photo</h3>
-                <p className="text-gray-500 mb-4">
-                  Click to browse or drag and drop your image here
-                </p>
-                <p className="text-sm text-gray-400">
-                  Supports JPG, PNG, WEBP up to 10MB
-                </p>
-              </div>
-              <Input 
-                ref={fileInputRef} 
-                type="file" 
-                accept="image/*" 
-                onChange={handleFileUpload} 
-                className="hidden" 
-              />
-            </div>
+            <PhotoUploadArea onFileUpload={handleFileUpload} />
           ) : (
-            // Preview and results section
             <div>
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold mb-4 text-center">
-                  {uploadedImage.processed ? 'Restoration Complete!' : 'Photo Preview'}
-                </h3>
-                
-                {isProcessing ? (
-                  <div className="w-full max-w-md mx-auto">
-                    <div className="w-full h-64 bg-gray-100 rounded-lg shadow-md flex items-center justify-center">
-                      <div className="text-center">
-                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-600" />
-                        <p className="text-gray-600">Restoring your photo...</p>
-                      </div>
-                    </div>
-                  </div>
-                ) : uploadedImage.processed ? (
-                  <div className="max-w-md mx-auto">
-                    <BeforeAfterSlider
-                      beforeImage="/lovable-uploads/7117f7ec-9fc2-42f1-a143-e78135ff688e.png"
-                      afterImage={uploadedImage.processed}
-                      alt="Photo restoration"
-                      className="w-full"
-                    />
-                  </div>
-                ) : (
-                  <div className="max-w-md mx-auto">
-                    <div className="relative">
-                      <img 
-                        src={uploadedImage.preview} 
-                        alt="Original photo" 
-                        className="w-full h-64 object-cover rounded-lg shadow-md" 
-                      />
-                      <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-sm">
-                        Ready for Restoration
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <PhotoPreview 
+                uploadedImage={uploadedImage} 
+                isProcessing={isProcessing} 
+              />
 
-              {/* Action buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                {!uploadedImage.processed && !isProcessing && (
-                  <Button 
-                    onClick={simulateRestoration} 
-                    size="lg" 
-                    className="bg-amber-600 hover:bg-blue-700"
-                    disabled={user && remainingRestorations <= 0}
-                  >
-                    {user && remainingRestorations <= 0 ? 'No Restorations Left' : 'Start Restoration'}
-                  </Button>
-                )}
-                
-                {uploadedImage.processed && (
-                  <Button 
-                    onClick={downloadRestored} 
-                    size="lg" 
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download Restored Photo
-                  </Button>
-                )}
-                
-                <Button 
-                  onClick={resetUpload} 
-                  variant="outline" 
-                  size="lg" 
-                  disabled={isProcessing}
-                >
-                  Upload Another Photo
-                </Button>
-              </div>
+              <ActionButtons
+                uploadedImage={uploadedImage}
+                isProcessing={isProcessing}
+                user={user}
+                remainingRestorations={remainingRestorations}
+                onStartRestoration={simulateRestoration}
+                onDownload={downloadRestored}
+                onReset={resetUpload}
+              />
 
-              {uploadedImage.processed && (
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg text-center">
-                  <p className="text-blue-800 font-medium">
-                    Love the results? Choose a service package below for full-quality restoration!
-                  </p>
-                </div>
-              )}
-
-              {user && remainingRestorations <= 0 && !uploadedImage.processed && (
-                <div className="mt-6 p-4 bg-amber-50 rounded-lg text-center">
-                  <p className="text-amber-800 font-medium">
-                    You've used all your free restorations. Please upgrade to continue.
-                  </p>
-                </div>
-              )}
+              <UpgradePrompt
+                uploadedImage={uploadedImage}
+                user={user}
+                remainingRestorations={remainingRestorations}
+              />
             </div>
           )}
         </div>
