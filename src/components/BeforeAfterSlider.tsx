@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 
 interface BeforeAfterSliderProps {
   beforeImage: string;
@@ -14,45 +14,106 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   alt = "Before and after restoration",
   className = ""
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseDown = useCallback(() => {
+    setIsDragging(true);
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging || !containerRef.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setSliderPosition(percentage);
+  }, [isDragging]);
+
+  React.useEffect(() => {
+    const handleGlobalMouseUp = () => setIsDragging(false);
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !containerRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+      setSliderPosition(percentage);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+    }
+
+    return () => {
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+    };
+  }, [isDragging]);
 
   return (
     <div 
-      className={`relative overflow-hidden rounded-lg shadow-md cursor-pointer ${className}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      ref={containerRef}
+      className={`relative overflow-hidden rounded-lg shadow-md cursor-pointer select-none ${className}`}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
     >
-      {/* Before image (background) */}
-      <img 
-        src={beforeImage}
-        alt={`${alt} - before`}
-        className="w-full h-64 object-cover"
-      />
-      
-      {/* After image (overlay) */}
+      {/* After image (background) */}
       <img 
         src={afterImage}
         alt={`${alt} - after`}
-        className={`absolute inset-0 w-full h-64 object-cover transition-opacity duration-300 ${
-          isHovered ? 'opacity-100' : 'opacity-0'
-        }`}
+        className="w-full h-64 object-cover"
+        draggable={false}
       />
+      
+      {/* Before image (clipped overlay) */}
+      <img 
+        src={beforeImage}
+        alt={`${alt} - before`}
+        className="absolute inset-0 w-full h-64 object-cover"
+        style={{
+          clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`
+        }}
+        draggable={false}
+      />
+      
+      {/* Slider line */}
+      <div 
+        className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg cursor-ew-resize z-10"
+        style={{ left: `${sliderPosition}%` }}
+        onMouseDown={handleMouseDown}
+      >
+        {/* Slider handle */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center">
+          <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center">
+            <div className="w-2 h-2 bg-white rounded-full"></div>
+          </div>
+        </div>
+      </div>
       
       {/* Labels */}
       <div className="absolute top-2 left-2">
-        <span className={`px-2 py-1 rounded text-xs font-medium transition-all duration-300 ${
-          isHovered 
-            ? 'bg-green-500 text-white' 
-            : 'bg-red-500 text-white'
-        }`}>
-          {isHovered ? 'After' : 'Before'}
+        <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-medium">
+          Before
         </span>
       </div>
       
-      {/* Hover instruction */}
-      <div className="absolute bottom-2 right-2">
+      <div className="absolute top-2 right-2">
+        <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
+          After
+        </span>
+      </div>
+      
+      {/* Instructions */}
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
         <span className="bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
-          Hover to see result
+          Drag to compare
         </span>
       </div>
     </div>
