@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -128,7 +127,7 @@ const PhotoUpload = () => {
       // Simulate processing time
       await new Promise(resolve => setTimeout(resolve, 3000));
 
-      // Use the uploaded restoration images for demo
+      // Use the demo restored image
       setUploadedImage(prev => prev ? {
         ...prev,
         processed: "/lovable-uploads/ef7b6917-efe1-4e89-a350-ef968ab28d40.png"

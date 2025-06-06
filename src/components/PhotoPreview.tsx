@@ -33,7 +33,7 @@ const PhotoPreview: React.FC<PhotoPreviewProps> = ({ uploadedImage, isProcessing
       ) : uploadedImage.processed ? (
         <div className="max-w-md mx-auto">
           <BeforeAfterSlider
-            beforeImage="/lovable-uploads/7117f7ec-9fc2-42f1-a143-e78135ff688e.png"
+            beforeImage={uploadedImage.preview}
             afterImage={uploadedImage.processed}
             alt="Photo restoration"
             className="w-full"
