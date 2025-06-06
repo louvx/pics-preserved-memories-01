@@ -33,18 +33,11 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user, onSignOut, isMobile =
   const menuContent = (
     <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200">
       {!user ? (
-        <>
-          <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
-            <Link to="/login" className="w-full">
-              Login
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
-            <Link to="/login" className="w-full">
-              Register
-            </Link>
-          </DropdownMenuItem>
-        </>
+        <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
+          <Link to="/login" className="w-full">
+            Login
+          </Link>
+        </DropdownMenuItem>
       ) : (
         <>
           <DropdownMenuItem className="cursor-pointer hover:bg-amber-50">
