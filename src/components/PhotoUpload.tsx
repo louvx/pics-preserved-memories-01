@@ -6,36 +6,43 @@ import PhotoUploadArea from './PhotoUploadArea';
 import PhotoPreview from './PhotoPreview';
 import ActionButtons from './ActionButtons';
 import UpgradePrompt from './UpgradePrompt';
-
 interface UploadedImage {
   file: File;
   preview: string;
   processed?: string;
 }
-
 const PhotoUpload = () => {
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [user, setUser] = useState(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-  const { remainingRestorations, deductCredit, refetchCredits } = useUserCredits(user);
+  const {
+    toast
+  } = useToast();
+  const {
+    remainingRestorations,
+    deductCredit,
+    refetchCredits
+  } = useUserCredits(user);
 
   // Get current user
   React.useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({
+      data: {
+        session
+      }
+    }) => {
       setUser(session?.user ?? null);
     });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
+    const {
+      data: {
+        subscription
       }
-    );
-
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
     return () => subscription.unsubscribe();
   }, []);
-
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -59,19 +66,16 @@ const PhotoUpload = () => {
       });
       return;
     }
-
     const preview = URL.createObjectURL(file);
     setUploadedImage({
       file,
       preview
     });
-    
     toast({
       title: "Photo uploaded",
       description: "Click 'Start Restoration' to begin processing"
     });
   };
-
   const simulateRestoration = async () => {
     if (!uploadedImage) return;
 
@@ -94,13 +98,10 @@ const PhotoUpload = () => {
       });
       return;
     }
-
     setIsProcessing(true);
-
     try {
       // First, deduct the credit
       const creditDeducted = await deductCredit();
-      
       if (!creditDeducted) {
         toast({
           title: "Error",
@@ -112,14 +113,13 @@ const PhotoUpload = () => {
       }
 
       // Save restoration record to database
-      const { error: insertError } = await supabase
-        .from('photo_restorations')
-        .insert({
-          user_id: user.id,
-          filename: uploadedImage.file.name,
-          status: 'processing'
-        });
-
+      const {
+        error: insertError
+      } = await supabase.from('photo_restorations').insert({
+        user_id: user.id,
+        filename: uploadedImage.file.name,
+        status: 'processing'
+      });
       if (insertError) {
         console.error('Error saving restoration:', insertError);
       }
@@ -132,7 +132,6 @@ const PhotoUpload = () => {
         ...prev,
         processed: "/lovable-uploads/ef7b6917-efe1-4e89-a350-ef968ab28d40.png"
       } : null);
-
       toast({
         title: "Restoration complete!",
         description: "Your photo has been successfully restored"
@@ -140,7 +139,6 @@ const PhotoUpload = () => {
 
       // Refresh credits to show updated count
       refetchCredits();
-
     } catch (error) {
       console.error('Restoration error:', error);
       toast({
@@ -152,7 +150,6 @@ const PhotoUpload = () => {
       setIsProcessing(false);
     }
   };
-
   const downloadRestored = () => {
     if (!uploadedImage?.processed) return;
 
@@ -161,13 +158,11 @@ const PhotoUpload = () => {
     link.href = uploadedImage.processed;
     link.download = `restored_${uploadedImage.file.name}`;
     link.click();
-    
     toast({
       title: "Download started",
       description: "Your restored photo is being downloaded"
     });
   };
-
   const resetUpload = () => {
     if (uploadedImage?.preview) {
       URL.revokeObjectURL(uploadedImage.preview);
@@ -178,50 +173,23 @@ const PhotoUpload = () => {
       fileInputRef.current.value = '';
     }
   };
-
-  return (
-    <section id="upload" className="bg-gradient-to-br from-orange-50 to-amber-50 py-20">
+  return <section id="upload" className="bg-gradient-to-br from-orange-50 to-amber-50 py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            See Your Photo Restored – In Seconds!
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Upload an image and instantly preview our AI's restoration power.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Get Your Free Preview Instantly</h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Upload any photo and watch our AI work its magic. You'll get a free, watermarked preview in seconds. No credit card required, no strings attached.</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-lg p-8">
-          {!uploadedImage ? (
-            <PhotoUploadArea onFileUpload={handleFileUpload} />
-          ) : (
-            <div>
-              <PhotoPreview 
-                uploadedImage={uploadedImage} 
-                isProcessing={isProcessing} 
-              />
+          {!uploadedImage ? <PhotoUploadArea onFileUpload={handleFileUpload} /> : <div>
+              <PhotoPreview uploadedImage={uploadedImage} isProcessing={isProcessing} />
 
-              <ActionButtons
-                uploadedImage={uploadedImage}
-                isProcessing={isProcessing}
-                user={user}
-                remainingRestorations={remainingRestorations}
-                onStartRestoration={simulateRestoration}
-                onDownload={downloadRestored}
-                onReset={resetUpload}
-              />
+              <ActionButtons uploadedImage={uploadedImage} isProcessing={isProcessing} user={user} remainingRestorations={remainingRestorations} onStartRestoration={simulateRestoration} onDownload={downloadRestored} onReset={resetUpload} />
 
-              <UpgradePrompt
-                uploadedImage={uploadedImage}
-                user={user}
-                remainingRestorations={remainingRestorations}
-              />
-            </div>
-          )}
+              <UpgradePrompt uploadedImage={uploadedImage} user={user} remainingRestorations={remainingRestorations} />
+            </div>}
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default PhotoUpload;
