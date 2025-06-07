@@ -19,17 +19,17 @@ const Hero = () => {
           <h1 className="font-bold text-gray-900 mb-6 leading-tight text-4xl md:text-7xl">
             Bring Your Precious
             <br />
-            <span className="text-gray-800">Memories Back</span>
+            <span className="text-gray-800">Memories Back to Life</span>
           </h1>
 
           {/* Sub-headline */}
-          <p className="md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed text-base">Restore damaged, faded, or torn photos with our advanced AI and expert touch, all while keeping original details perfectly preserved.</p>
+          <p className="md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed text-base">Our advanced AI doesn't just fix old photos—it restores their soul. Repair extreme damage, reveal forgotten details, and see your history in vibrant color, all in a matter of seconds.</p>
 
           {/* Call-to-Action Button */}
           <div className="mb-8">
             <Button size="lg" onClick={() => document.getElementById('upload')?.scrollIntoView({
             behavior: 'smooth'
-          })} className="bg-amber-700 hover:bg-amber-800 text-white py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 px-[52px]">Try For Free</Button>
+          })} className="bg-amber-700 hover:bg-amber-800 text-white py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 px-[52px]">Restore My Photo For Free</Button>
           </div>
 
           {/* Supporting Trust Snippets */}
