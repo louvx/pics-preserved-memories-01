@@ -36,7 +36,7 @@ const Hero = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <Check size={16} className="text-green-600" />
-              <span>Limited 1x Try</span>
+              <span>Free 3 Credits</span>
             </div>
             <div className="flex items-center gap-2">
               <Check size={16} className="text-green-600" />
