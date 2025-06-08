@@ -30,13 +30,13 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isMenuOpen, onMenuC
         >
           How It Works
         </a>
-        <a 
-          href="#services" 
+        <Link 
+          to="/pricing" 
           className="text-gray-700 hover:text-amber-700 transition-colors font-medium py-2"
           onClick={handleLinkClick}
         >
           Pricing
-        </a>
+        </Link>
         <Link 
           to="/blog" 
           className="text-gray-700 hover:text-amber-700 transition-colors font-medium py-2"

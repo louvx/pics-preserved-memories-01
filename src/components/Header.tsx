@@ -58,12 +58,12 @@ const Header = () => {
             >
               How It Works
             </a>
-            <a 
-              href="#services" 
+            <Link 
+              to="/pricing" 
               className="text-gray-700 hover:text-amber-700 transition-colors font-medium"
             >
               Pricing
-            </a>
+            </Link>
             <Link 
               to="/blog" 
               className="text-gray-700 hover:text-amber-700 transition-colors font-medium"
