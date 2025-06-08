@@ -1,4 +1,7 @@
+
 import React, { useState } from 'react';
+import { ImageComparison, ImageComparisonImage, ImageComparisonSlider } from '@/components/ui/image-comparison';
+
 const BeforeAfterGallery = () => {
   const [activeImage, setActiveImage] = useState(0);
   const examples = [{
@@ -17,7 +20,9 @@ const BeforeAfterGallery = () => {
     title: "Wedding Memory Restoration",
     description: "Restored damaged areas and improved clarity"
   }];
-  return <section id="gallery" className="bg-gradient-to-br from-orange-50 to-amber-50 py-20">
+  
+  return (
+    <section id="gallery" className="bg-gradient-to-br from-orange-50 to-amber-50 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">From Lost to Unforgettable. 
@@ -28,24 +33,37 @@ See The Difference.</h2>
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Image Display */}
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Before</h3>
-                <div className="relative overflow-hidden rounded-lg shadow-lg">
-                  <img src={examples[activeImage].before} alt="Before restoration" className="w-full h-64 object-cover" />
-                  <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm">
-                    Damaged
+            <ImageComparison className="aspect-[4/3] w-full rounded-lg shadow-lg">
+              <ImageComparisonImage
+                src={examples[activeImage].before}
+                alt={`${examples[activeImage].title} - before`}
+                position="left"
+              />
+              <ImageComparisonImage
+                src={examples[activeImage].after}
+                alt={`${examples[activeImage].title} - after`}
+                position="right"
+              />
+              <ImageComparisonSlider className="bg-white shadow-lg">
+                <div className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-lg flex items-center justify-center">
+                  <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
                   </div>
                 </div>
+              </ImageComparisonSlider>
+            </ImageComparison>
+            
+            {/* Labels */}
+            <div className="flex justify-between">
+              <div className="text-center">
+                <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  Before
+                </span>
               </div>
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">After</h3>
-                <div className="relative overflow-hidden rounded-lg shadow-lg">
-                  <img src={examples[activeImage].after} alt="After restoration" className="w-full h-64 object-cover" />
-                  <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-sm">
-                    Restored
-                  </div>
-                </div>
+                <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  After
+                </span>
               </div>
             </div>
             
@@ -58,9 +76,17 @@ See The Difference.</h2>
           {/* Thumbnails and Info */}
           <div className="space-y-6">
             <div className="grid grid-cols-3 gap-4">
-              {examples.map((example, index) => <button key={index} onClick={() => setActiveImage(index)} className={`relative overflow-hidden rounded-lg ${activeImage === index ? 'ring-4 ring-blue-500' : 'hover:ring-2 hover:ring-blue-300'} transition-all`}>
+              {examples.map((example, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveImage(index)}
+                  className={`relative overflow-hidden rounded-lg ${
+                    activeImage === index ? 'ring-4 ring-blue-500' : 'hover:ring-2 hover:ring-blue-300'
+                  } transition-all`}
+                >
                   <img src={example.after} alt={example.title} className="w-full h-20 object-cover" />
-                </button>)}
+                </button>
+              ))}
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -91,6 +117,8 @@ See The Difference.</h2>
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default BeforeAfterGallery;
