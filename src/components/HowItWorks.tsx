@@ -18,16 +18,11 @@ const HowItWorks = () => {
           <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
             Simply drag & drop or select your old photo file. We guarantee all uploads are 100% private and secure.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="max-w-md mx-auto">
             <img
               src="https://images.unsplash.com/photo-1551818255-e6e10975cd17?w=500&h=300&fit=crop"
               alt="Upload interface"
-              className="rounded-lg object-cover h-32 md:h-44 w-full shadow-lg"
-            />
-            <img
-              src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=500&h=300&fit=crop"
-              alt="Secure upload"
-              className="rounded-lg object-cover h-32 md:h-44 w-full shadow-lg"
+              className="rounded-lg object-cover h-48 w-full shadow-lg"
             />
           </div>
         </div>
@@ -43,33 +38,28 @@ const HowItWorks = () => {
             </div>
             <h3 className="text-2xl font-bold text-gray-900">Witness the AI Magic</h3>
           </div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-4">
+          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-6">
             Instantly, our advanced AI will analyze, repair, and enhance your photo. You'll immediately see a stunning, watermarked preview of the incredible result.
           </p>
-          <div className="mb-8">
-            <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm mb-2">
+          <div className="mb-8 space-y-2">
+            <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm">
               ✨ AI damage detection and repair
             </div>
-            <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm mb-2">
+            <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm">
               ✨ Color restoration and enhancement
             </div>
-            <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm mb-2">
+            <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm">
               ✨ Detail recovery and sharpening
             </div>
             <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm">
               ✨ Instant preview generation
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="max-w-md mx-auto">
             <img
               src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&h=300&fit=crop"
-              alt="AI processing"
-              className="rounded-lg object-cover h-32 md:h-44 w-full shadow-lg"
-            />
-            <img
-              src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=500&h=300&fit=crop"
-              alt="Enhanced result"
-              className="rounded-lg object-cover h-32 md:h-44 w-full shadow-lg"
+              alt="AI processing magic"
+              className="rounded-lg object-cover h-48 w-full shadow-lg"
             />
           </div>
         </div>
@@ -88,16 +78,11 @@ const HowItWorks = () => {
           <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
             Love what you see? Choose a credit pack to remove the watermark and download your memory in beautiful high resolution. It's now ready to be printed, shared, and cherished forever.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="max-w-md mx-auto">
             <img
               src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=500&h=300&fit=crop"
-              alt="High resolution download"
-              className="rounded-lg object-cover h-32 md:h-44 w-full shadow-lg"
-            />
-            <img
-              src="https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=500&h=300&fit=crop"
-              alt="Family memories"
-              className="rounded-lg object-cover h-32 md:h-44 w-full shadow-lg"
+              alt="High resolution family memories"
+              className="rounded-lg object-cover h-48 w-full shadow-lg"
             />
           </div>
         </div>
