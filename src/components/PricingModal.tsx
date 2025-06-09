@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -12,6 +14,43 @@ interface PricingModalProps {
 }
 
 const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onPurchase }) => {
+  const handlePurchase = async (credits: number, price: number) => {
+    try {
+      console.log('Starting purchase process', { credits, price });
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Please sign in to purchase credits');
+        return;
+      }
+
+      toast.loading('Creating checkout session...');
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { credits, price }
+      });
+
+      if (error) {
+        console.error('Checkout error:', error);
+        toast.error('Failed to create checkout session');
+        return;
+      }
+
+      if (data?.url) {
+        console.log('Redirecting to checkout:', data.url);
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+        toast.dismiss();
+        onClose(); // Close the modal
+      } else {
+        toast.error('No checkout URL received');
+      }
+    } catch (error) {
+      console.error('Purchase error:', error);
+      toast.error('Something went wrong. Please try again.');
+    }
+  };
+
   const plans = [
     {
       id: 'starter',
@@ -81,7 +120,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onPurchase
               <CardContent className="pb-6">
                 <Button 
                   className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-800 hover:bg-gray-900'} text-white`}
-                  onClick={() => onPurchase(plan.credits, plan.price)}
+                  onClick={() => handlePurchase(plan.credits, plan.price)}
                 >
                   Choose Plan
                 </Button>

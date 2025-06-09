@@ -5,28 +5,65 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Pricing = () => {
+  const handlePurchase = async (credits: number, price: number) => {
+    try {
+      console.log('Starting purchase process', { credits, price });
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Please sign in to purchase credits');
+        return;
+      }
+
+      toast.loading('Creating checkout session...');
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { credits, price }
+      });
+
+      if (error) {
+        console.error('Checkout error:', error);
+        toast.error('Failed to create checkout session');
+        return;
+      }
+
+      if (data?.url) {
+        console.log('Redirecting to checkout:', data.url);
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+        toast.dismiss();
+      } else {
+        toast.error('No checkout URL received');
+      }
+    } catch (error) {
+      console.error('Purchase error:', error);
+      toast.error('Something went wrong. Please try again.');
+    }
+  };
+
   const services = [{
     title: "STARTER",
     subtitle: "Perfect for that one special photo or trying us out.",
-    credits: "1 Credit",
-    price: "$10",
-    pricePerPhoto: "$10.00 per photo",
+    credits: 1,
+    price: 10,
+    pricePerPhoto: 10.00,
     features: [
       "Includes All Features Listed Above",
       "High-Resolution Download",
       "Secure Cloud Storage"
     ],
     popular: false,
-    cta: "Get Started",
-    ctaAction: () => console.log("Get started with starter pack")
+    cta: "Get Started"
   }, {
     title: "CREATOR PACK",
     subtitle: "Ideal for small photo albums and social media creators.",
-    credits: "10 Credits",
-    price: "$50",
-    pricePerPhoto: "$5.00 per photo",
+    credits: 10,
+    price: 50,
+    pricePerPhoto: 5.00,
     savings: "You Save 50%!",
     features: [
       "Includes All Features Listed Above",
@@ -34,14 +71,13 @@ const Pricing = () => {
       "Secure Cloud Storage"
     ],
     popular: true,
-    cta: "Start Creating",
-    ctaAction: () => console.log("Start creating with creator pack")
+    cta: "Start Creating"
   }, {
     title: "ARCHIVE PACK",
     subtitle: "For preserving entire family archives and professional use.",
-    credits: "50 Credits",
-    price: "$150",
-    pricePerPhoto: "$3.00 per photo",
+    credits: 50,
+    price: 150,
+    pricePerPhoto: 3.00,
     savings: "You Save 70%!",
     features: [
       "Includes All Features Listed Above",
@@ -51,7 +87,6 @@ const Pricing = () => {
     ],
     popular: false,
     cta: "Start Archiving",
-    ctaAction: () => console.log("Start archiving with archive pack"),
     bestValue: true
   }];
 
@@ -97,9 +132,9 @@ const Pricing = () => {
                   <CardTitle className="text-2xl font-bold text-gray-900">{service.title}</CardTitle>
                   <CardDescription className="text-gray-600">{service.subtitle}</CardDescription>
                   <div className="mt-4">
-                    <div className="text-lg font-semibold text-gray-700 mb-1">{service.credits}</div>
-                    <span className="text-4xl font-bold text-blue-600">{service.price}</span>
-                    <div className="text-sm text-gray-500 mt-1">({service.pricePerPhoto})</div>
+                    <div className="text-lg font-semibold text-gray-700 mb-1">{service.credits} Credit{service.credits > 1 ? 's' : ''}</div>
+                    <span className="text-4xl font-bold text-blue-600">${service.price}</span>
+                    <div className="text-sm text-gray-500 mt-1">(${service.pricePerPhoto.toFixed(2)} per photo)</div>
                     {service.savings && (
                       <div className="text-green-600 font-semibold mt-2">{service.savings}</div>
                     )}
@@ -120,7 +155,7 @@ const Pricing = () => {
                 <CardFooter>
                   <Button 
                     className={`w-full ${service.popular ? 'bg-blue-600 hover:bg-blue-700' : service.bestValue ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-800 hover:bg-gray-900'} text-white`} 
-                    onClick={service.ctaAction}
+                    onClick={() => handlePurchase(service.credits, service.price)}
                   >
                     {service.cta}
                   </Button>
