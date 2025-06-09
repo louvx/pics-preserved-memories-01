@@ -34,7 +34,7 @@ export const useUserCredits = (user: User | null) => {
         if (error.code === 'PGRST116') {
           await createUserCredits();
         }
-      } else {
+      } else if (data) {
         setRemainingRestorations(data.remaining_restorations);
       }
     } catch (error) {
@@ -60,7 +60,7 @@ export const useUserCredits = (user: User | null) => {
 
       if (error) {
         console.error('Error creating user credits:', error);
-      } else {
+      } else if (data) {
         setRemainingRestorations(data.remaining_restorations);
       }
     } catch (error) {
@@ -72,11 +72,12 @@ export const useUserCredits = (user: User | null) => {
     if (!user || remainingRestorations <= 0) return false;
 
     try {
+      const currentUsed = await getCurrentUsedCount();
       const { data, error } = await supabase
         .from('user_credits')
         .update({
           remaining_restorations: remainingRestorations - 1,
-          total_restorations_used: (await getCurrentUsedCount()) + 1,
+          total_restorations_used: currentUsed + 1,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
@@ -88,7 +89,9 @@ export const useUserCredits = (user: User | null) => {
         return false;
       }
 
-      setRemainingRestorations(data.remaining_restorations);
+      if (data) {
+        setRemainingRestorations(data.remaining_restorations);
+      }
       return true;
     } catch (error) {
       console.error('Error deducting credit:', error);

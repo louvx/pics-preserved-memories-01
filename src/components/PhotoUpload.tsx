@@ -8,6 +8,7 @@ import PhotoPreview from './PhotoPreview';
 import ActionButtons from './ActionButtons';
 import UpgradePrompt from './UpgradePrompt';
 import PricingModal from './PricingModal';
+import type { User } from '@supabase/supabase-js';
 
 interface UploadedImage {
   file: File;
@@ -20,7 +21,7 @@ const PhotoUpload = () => {
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { remainingRestorations, deductCredit, refetchCredits } = useUserCredits(user);
@@ -109,16 +110,21 @@ const PhotoUpload = () => {
       }
 
       // Save restoration record to database
-      const { error: insertError } = await supabase
-        .from('photo_restorations')
-        .insert({
-          user_id: user.id,
-          filename: uploadedImage.file.name,
-          status: 'processing'
-        });
+      try {
+        const { error: insertError } = await supabase
+          .from('photo_restorations')
+          .insert({
+            user_id: user.id,
+            filename: uploadedImage.file.name,
+            status: 'processing'
+          });
 
-      if (insertError) {
-        console.error('Error saving restoration:', insertError);
+        if (insertError) {
+          console.error('Error saving restoration:', insertError);
+        }
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        // Continue with restoration even if DB save fails
       }
 
       // Simulate processing time with realistic progress
