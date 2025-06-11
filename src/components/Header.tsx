@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -70,12 +69,12 @@ const Header = () => {
             >
               Case Studies
             </Link>
-            <a 
-              href="#faq" 
+            <Link 
+              to="/faq" 
               className="text-gray-700 hover:text-amber-700 transition-colors font-medium"
             >
               FAQ
-            </a>
+            </Link>
           </nav>
 
           {/* Right side - Credits & User Account & CTA */}
