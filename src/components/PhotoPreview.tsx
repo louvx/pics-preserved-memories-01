@@ -14,6 +14,7 @@ interface UploadedImage {
 interface PhotoPreviewProps {
   uploadedImage: UploadedImage;
   isProcessing: boolean;
+  isFreeUser: boolean;
   onRemoveWatermark: () => void;
   onDownloadHD: () => void;
 }
@@ -21,6 +22,7 @@ interface PhotoPreviewProps {
 const PhotoPreview: React.FC<PhotoPreviewProps> = ({ 
   uploadedImage, 
   isProcessing, 
+  isFreeUser,
   onRemoveWatermark,
   onDownloadHD 
 }) => {
@@ -47,14 +49,14 @@ const PhotoPreview: React.FC<PhotoPreviewProps> = ({
           <WatermarkedBeforeAfterSlider
             beforeImage={uploadedImage.preview}
             afterImage={uploadedImage.processed}
-            showWatermark={!uploadedImage.watermarkRemoved}
+            showWatermark={isFreeUser && !uploadedImage.watermarkRemoved}
             alt="Photo restoration"
             className="w-full"
           />
           
           {/* Action Button */}
           <div className="text-center">
-            {uploadedImage.watermarkRemoved ? (
+            {uploadedImage.watermarkRemoved || !isFreeUser ? (
               <Button 
                 onClick={onDownloadHD}
                 className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
@@ -62,12 +64,17 @@ const PhotoPreview: React.FC<PhotoPreviewProps> = ({
                 Download HD
               </Button>
             ) : (
-              <Button 
-                onClick={onRemoveWatermark}
-                className="bg-amber-700 hover:bg-amber-800 text-white px-8 py-3 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                Remove Watermark & Download
-              </Button>
+              <div className="space-y-3">
+                <Button 
+                  onClick={onRemoveWatermark}
+                  className="bg-amber-700 hover:bg-amber-800 text-white px-8 py-3 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 w-full"
+                >
+                  Remove Watermark & Download
+                </Button>
+                <p className="text-sm text-gray-600">
+                  Purchase credits to download without watermark
+                </p>
+              </div>
             )}
           </div>
         </div>

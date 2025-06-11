@@ -58,7 +58,8 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onPurchase
       credits: 1,
       price: 10,
       pricePerPhoto: 10.00,
-      popular: false
+      popular: false,
+      description: 'Remove watermark from this photo'
     },
     {
       id: 'creator',
@@ -67,7 +68,8 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onPurchase
       price: 50,
       pricePerPhoto: 5.00,
       popular: true,
-      savings: 'Save 50%'
+      savings: 'Save 50%',
+      description: 'Best for multiple photos'
     },
     {
       id: 'archive',
@@ -76,7 +78,8 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onPurchase
       price: 150,
       pricePerPhoto: 3.00,
       popular: false,
-      savings: 'Save 70%'
+      savings: 'Save 70%',
+      description: 'Perfect for large collections'
     }
   ];
 
@@ -85,8 +88,11 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onPurchase
       <DialogContent className="max-w-4xl mx-auto bg-white">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center text-gray-900 mb-2">
-            To download your photo in high resolution without the watermark, please choose a credit pack
+            Choose a Credit Pack to Remove Watermark
           </DialogTitle>
+          <p className="text-center text-gray-600">
+            Select a plan to download your photo in high resolution without the watermark
+          </p>
         </DialogHeader>
         
         <div className="grid md:grid-cols-3 gap-6 py-6">
@@ -103,6 +109,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onPurchase
               
               <CardHeader className="text-center">
                 <CardTitle className="text-xl font-bold text-gray-900">{plan.title}</CardTitle>
+                <p className="text-sm text-gray-600">{plan.description}</p>
                 <div className="mt-4">
                   <div className="text-lg font-semibold text-gray-700 mb-2">
                     {plan.credits} Credit{plan.credits > 1 ? 's' : ''}

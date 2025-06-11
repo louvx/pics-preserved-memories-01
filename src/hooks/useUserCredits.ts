@@ -5,11 +5,15 @@ import type { User } from '@supabase/supabase-js';
 
 export const useUserCredits = (user: User | null) => {
   const [remainingRestorations, setRemainingRestorations] = useState<number>(1);
+  const [isFreeUser, setIsFreeUser] = useState<boolean>(true);
+  const [packageType, setPackageType] = useState<string>('free');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
       setRemainingRestorations(1);
+      setIsFreeUser(true);
+      setPackageType('free');
       setLoading(false);
       return;
     }
@@ -24,7 +28,7 @@ export const useUserCredits = (user: User | null) => {
       setLoading(true);
       const { data, error } = await supabase
         .from('user_credits')
-        .select('remaining_restorations')
+        .select('remaining_restorations, is_free_user, package_type')
         .eq('user_id', user.id)
         .single();
 
@@ -36,6 +40,8 @@ export const useUserCredits = (user: User | null) => {
         }
       } else if (data) {
         setRemainingRestorations(data.remaining_restorations);
+        setIsFreeUser(data.is_free_user);
+        setPackageType(data.package_type);
       }
     } catch (error) {
       console.error('Error fetching credits:', error);
@@ -53,15 +59,19 @@ export const useUserCredits = (user: User | null) => {
         .insert({
           user_id: user.id,
           remaining_restorations: 1,
-          total_restorations_used: 0
+          total_restorations_used: 0,
+          is_free_user: true,
+          package_type: 'free'
         })
-        .select('remaining_restorations')
+        .select('remaining_restorations, is_free_user, package_type')
         .single();
 
       if (error) {
         console.error('Error creating user credits:', error);
       } else if (data) {
         setRemainingRestorations(data.remaining_restorations);
+        setIsFreeUser(data.is_free_user);
+        setPackageType(data.package_type);
       }
     } catch (error) {
       console.error('Error creating credits:', error);
@@ -81,7 +91,7 @@ export const useUserCredits = (user: User | null) => {
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
-        .select('remaining_restorations')
+        .select('remaining_restorations, is_free_user, package_type')
         .single();
 
       if (error) {
@@ -91,6 +101,8 @@ export const useUserCredits = (user: User | null) => {
 
       if (data) {
         setRemainingRestorations(data.remaining_restorations);
+        setIsFreeUser(data.is_free_user);
+        setPackageType(data.package_type);
       }
       return true;
     } catch (error) {
@@ -113,6 +125,8 @@ export const useUserCredits = (user: User | null) => {
 
   return {
     remainingRestorations,
+    isFreeUser,
+    packageType,
     loading,
     deductCredit,
     refetchCredits: fetchUserCredits

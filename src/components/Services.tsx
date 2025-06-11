@@ -44,6 +44,21 @@ const Services = () => {
   };
 
   const services = [{
+    title: "FREE",
+    subtitle: "Try our service with watermarked results.",
+    credits: 1,
+    price: 0,
+    pricePerPhoto: 0.00,
+    features: [
+      "1 Free Photo Restoration",
+      "AI-Powered Enhancement",
+      "Watermarked Preview",
+      "High-Resolution Processing"
+    ],
+    popular: false,
+    cta: "Sign Up Free",
+    isFree: true
+  }, {
     title: "STARTER",
     subtitle: "Perfect for that one special photo or trying us out.",
     credits: 1,
@@ -52,6 +67,7 @@ const Services = () => {
     features: [
       "Includes All Features Listed Above",
       "High-Resolution Download",
+      "No Watermark",
       "Secure Cloud Storage"
     ],
     popular: false,
@@ -66,6 +82,7 @@ const Services = () => {
     features: [
       "Includes All Features Listed Above",
       "High-Resolution Downloads",
+      "No Watermark", 
       "Secure Cloud Storage"
     ],
     popular: true,
@@ -80,6 +97,7 @@ const Services = () => {
     features: [
       "Includes All Features Listed Above",
       "High-Resolution Downloads",
+      "No Watermark",
       "Secure Cloud Storage",
       "Priority Support"
     ],
@@ -88,22 +106,27 @@ const Services = () => {
     bestValue: true
   }];
 
+  const handleFreeSignup = () => {
+    // Redirect to login/signup page
+    window.location.href = '/login';
+  };
+
   return (
     <section id="services" className="bg-gradient-to-br from-orange-50 to-amber-50 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Simple, Powerful Pricing</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-2">
-            Choose a credit pack that suits your needs. The more you buy, the more you save.
+            Start free, then choose a credit pack that suits your needs. The more you buy, the more you save.
           </p>
           <p className="text-lg font-semibold text-blue-600">
             1 Credit = 1 Full Photo Restoration. Credits Never Expire.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-4 gap-8">
           {services.map((service, index) => (
-            <Card key={index} className={`relative ${service.popular ? 'border-blue-500 border-2 shadow-lg' : service.bestValue ? 'border-green-500 border-2 shadow-lg' : 'border-gray-200'} hover:shadow-xl transition-all duration-300`}>
+            <Card key={index} className={`relative ${service.popular ? 'border-blue-500 border-2 shadow-lg' : service.bestValue ? 'border-green-500 border-2 shadow-lg' : service.isFree ? 'border-gray-300' : 'border-gray-200'} hover:shadow-xl transition-all duration-300`}>
               {service.popular && (
                 <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white">
                   Most Popular
@@ -120,8 +143,14 @@ const Services = () => {
                 <CardDescription className="text-gray-600">{service.subtitle}</CardDescription>
                 <div className="mt-4">
                   <div className="text-lg font-semibold text-gray-700 mb-1">{service.credits} Credit{service.credits > 1 ? 's' : ''}</div>
-                  <span className="text-4xl font-bold text-blue-600">${service.price}</span>
-                  <div className="text-sm text-gray-500 mt-1">(${service.pricePerPhoto.toFixed(2)} per photo)</div>
+                  {service.isFree ? (
+                    <span className="text-4xl font-bold text-green-600">FREE</span>
+                  ) : (
+                    <span className="text-4xl font-bold text-blue-600">${service.price}</span>
+                  )}
+                  {!service.isFree && (
+                    <div className="text-sm text-gray-500 mt-1">(${service.pricePerPhoto.toFixed(2)} per photo)</div>
+                  )}
                   {service.savings && (
                     <div className="text-green-600 font-semibold mt-2">{service.savings}</div>
                   )}
@@ -141,8 +170,8 @@ const Services = () => {
 
               <CardFooter>
                 <Button 
-                  className={`w-full ${service.popular ? 'bg-blue-600 hover:bg-blue-700' : service.bestValue ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-800 hover:bg-gray-900'} text-white`} 
-                  onClick={() => handlePurchase(service.credits, service.price)}
+                  className={`w-full ${service.popular ? 'bg-blue-600 hover:bg-blue-700' : service.bestValue ? 'bg-green-600 hover:bg-green-700' : service.isFree ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-800 hover:bg-gray-900'} text-white`} 
+                  onClick={service.isFree ? handleFreeSignup : () => handlePurchase(service.credits, service.price)}
                 >
                   {service.cta}
                 </Button>

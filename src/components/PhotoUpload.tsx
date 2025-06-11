@@ -24,7 +24,7 @@ const PhotoUpload = () => {
   const [user, setUser] = useState<User | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { remainingRestorations, deductCredit, refetchCredits } = useUserCredits(user);
+  const { remainingRestorations, isFreeUser, packageType, deductCredit, refetchCredits } = useUserCredits(user);
 
   // Get current user
   React.useEffect(() => {
@@ -68,7 +68,7 @@ const PhotoUpload = () => {
     
     toast({
       title: "Photo uploaded",
-      description: "Click 'Start Restoration' to begin processing"
+      description: user ? "Click 'Start Restoration' to begin processing" : "Sign up to restore your photo"
     });
   };
 
@@ -89,7 +89,7 @@ const PhotoUpload = () => {
     if (remainingRestorations <= 0) {
       toast({
         title: "No restorations left",
-        description: "You have used all your free restorations. Please upgrade to continue.",
+        description: "You have used all your restorations. Please upgrade to continue.",
         variant: "destructive"
       });
       return;
@@ -138,7 +138,7 @@ const PhotoUpload = () => {
 
       toast({
         title: "Restoration complete!",
-        description: "Your photo has been successfully restored"
+        description: isFreeUser ? "Your photo has been restored with watermark. Purchase credits to remove it." : "Your photo has been successfully restored"
       });
 
       // Refresh credits to show updated count
@@ -156,26 +156,77 @@ const PhotoUpload = () => {
   };
 
   const handleRemoveWatermark = () => {
-    setIsPricingModalOpen(true);
+    if (isFreeUser) {
+      setIsPricingModalOpen(true);
+    } else {
+      // Premium users can remove watermark directly
+      setUploadedImage(prev => prev ? {
+        ...prev,
+        watermarkRemoved: true
+      } : null);
+      
+      toast({
+        title: "Watermark removed!",
+        description: "You can now download the high-resolution version"
+      });
+    }
   };
 
   const handlePurchase = async (credits: number, price: number) => {
-    // Simulate successful purchase
+    // Close the modal and show the checkout process
     setIsPricingModalOpen(false);
     
-    toast({
-      title: "Payment successful!",
-      description: "Your credits have been added.",
-    });
+    try {
+      console.log('Starting purchase process', { credits, price });
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Login required",
+          description: "Please login to purchase credits",
+          variant: "destructive"
+        });
+        return;
+      }
 
-    // Remove watermark from current image
-    setUploadedImage(prev => prev ? {
-      ...prev,
-      watermarkRemoved: true
-    } : null);
+      toast({
+        title: "Redirecting to checkout...",
+        description: "Please complete your payment to remove the watermark"
+      });
 
-    // Update credits (simulate adding purchased credits)
-    refetchCredits();
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { credits, price }
+      });
+
+      if (error) {
+        console.error('Checkout error:', error);
+        toast({
+          title: "Error",
+          description: "Failed to create checkout session",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data?.url) {
+        console.log('Redirecting to checkout:', data.url);
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+      } else {
+        toast({
+          title: "Error",
+          description: "No checkout URL received",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Purchase error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const downloadRestored = () => {
@@ -211,12 +262,15 @@ const PhotoUpload = () => {
           {/* Congratulations Message for logged-in users */}
           {user && remainingRestorations > 0 && (
             <div className="text-center mb-8">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 max-w-2xl mx-auto">
-                <h2 className="text-2xl font-bold text-green-800 mb-2">
-                  🎉 Congratulations! You have {remainingRestorations} free restoration credit{remainingRestorations > 1 ? 's' : ''}
+              <div className={`${isFreeUser ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'} border rounded-lg p-4 max-w-2xl mx-auto`}>
+                <h2 className={`text-2xl font-bold ${isFreeUser ? 'text-blue-800' : 'text-green-800'} mb-2`}>
+                  🎉 {isFreeUser ? `Welcome! You have ${remainingRestorations} free restoration credit` : `Congratulations! You have ${remainingRestorations} restoration credit${remainingRestorations > 1 ? 's' : ''}`}
                 </h2>
-                <p className="text-green-700">
-                  Upload your photo below to start restoring your precious memories
+                <p className={`${isFreeUser ? 'text-blue-700' : 'text-green-700'}`}>
+                  {isFreeUser 
+                    ? 'Upload your photo below to get a watermarked preview. Purchase credits to download without watermark.'
+                    : 'Upload your photo below to start restoring your precious memories'
+                  }
                 </p>
               </div>
             </div>
@@ -242,6 +296,7 @@ const PhotoUpload = () => {
                 <PhotoPreview 
                   uploadedImage={uploadedImage} 
                   isProcessing={isProcessing}
+                  isFreeUser={isFreeUser}
                   onRemoveWatermark={handleRemoveWatermark}
                   onDownloadHD={downloadRestored}
                 />
