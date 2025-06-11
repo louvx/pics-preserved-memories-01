@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -7,17 +7,34 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
+import { useUserCredits } from '@/hooks/useUserCredits';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
   const credits = searchParams.get('credits');
+  const { remainingRestorations, refetchCredits } = useUserCredits(user);
+
+  useEffect(() => {
+    // Get current user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     if (credits) {
       toast.success(`Successfully purchased ${credits} credit${credits !== '1' ? 's' : ''}!`);
+      
+      // Refetch credits to show updated balance
+      if (user) {
+        refetchCredits();
+      }
     }
-  }, [credits]);
+  }, [credits, user, refetchCredits]);
 
   return (
     <div className="min-h-screen">
@@ -45,6 +62,11 @@ const PaymentSuccess = () => {
                   <p className="text-green-800 font-semibold">
                     You've received {credits} photo restoration credit{credits !== '1' ? 's' : ''}
                   </p>
+                  {user && (
+                    <p className="text-green-700 mt-2">
+                      Current balance: {remainingRestorations} credit{remainingRestorations !== 1 ? 's' : ''}
+                    </p>
+                  )}
                 </div>
               )}
               
