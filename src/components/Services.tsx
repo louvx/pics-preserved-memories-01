@@ -1,54 +1,49 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { User } from '@supabase/supabase-js';
 
 const Services = () => {
-  const handlePurchase = async (credits: number, price: number) => {
-    try {
-      console.log('Starting purchase process', { credits, price });
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error('Please sign in to purchase credits');
-        return;
-      }
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
 
-      toast.loading('Creating checkout session...');
+  useEffect(() => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
 
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { credits, price }
-      });
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
 
-      if (error) {
-        console.error('Checkout error:', error);
-        toast.error('Failed to create checkout session');
-        return;
-      }
+    return () => subscription.unsubscribe();
+  }, []);
 
-      if (data?.url) {
-        console.log('Redirecting to checkout:', data.url);
-        // Open Stripe checkout in a new tab
-        window.open(data.url, '_blank');
-        toast.dismiss();
-      } else {
-        toast.error('No checkout URL received');
-      }
-    } catch (error) {
-      console.error('Purchase error:', error);
-      toast.error('Something went wrong. Please try again.');
+  const handlePurchase = async (planId: string, credits: number, price: number) => {
+    // If user is not logged in, redirect to login with return URL
+    if (!user) {
+      const returnUrl = encodeURIComponent(`/payment?plan=${planId}`);
+      navigate(`/login?returnUrl=${returnUrl}`);
+      return;
     }
+
+    // If user is logged in, redirect to payment page
+    navigate(`/payment?plan=${planId}`);
   };
 
   const services = [{
+    id: "free",
     title: "FREE",
-    subtitle: "Try our service with watermarked results.",
+    subtitle: "Try our AI photo restoration with no commitment.",
     credits: 1,
     price: 0,
-    pricePerPhoto: 0.00,
+    pricePerPhoto: 0,
     features: [
       "1 Free Photo Restoration",
       "AI-Powered Enhancement",
@@ -59,6 +54,7 @@ const Services = () => {
     cta: "Sign Up Free",
     isFree: true
   }, {
+    id: "starter",
     title: "STARTER",
     subtitle: "Perfect for that one special photo or trying us out.",
     credits: 1,
@@ -73,6 +69,7 @@ const Services = () => {
     popular: false,
     cta: "Get Started"
   }, {
+    id: "creator",
     title: "CREATOR PACK",
     subtitle: "Ideal for small photo albums and social media creators.",
     credits: 10,
@@ -88,6 +85,7 @@ const Services = () => {
     popular: true,
     cta: "Start Creating"
   }, {
+    id: "archive",
     title: "ARCHIVE PACK",
     subtitle: "For preserving entire family archives and professional use.",
     credits: 50,
@@ -108,7 +106,7 @@ const Services = () => {
 
   const handleFreeSignup = () => {
     // Redirect to login/signup page
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   return (
@@ -125,8 +123,15 @@ const Services = () => {
         </div>
 
         <div className="grid md:grid-cols-4 gap-8">
-          {services.map((service, index) => (
-            <Card key={index} className={`relative ${service.popular ? 'border-blue-500 border-2 shadow-lg' : service.bestValue ? 'border-green-500 border-2 shadow-lg' : service.isFree ? 'border-gray-300' : 'border-gray-200'} hover:shadow-xl transition-all duration-300`}>
+          {services.map((service) => (
+            <Card 
+              key={service.id} 
+              className={`relative ${
+                service.popular ? 'border-blue-500 border-2 shadow-lg' : 
+                service.bestValue ? 'border-green-500 border-2 shadow-lg' : 
+                service.isFree ? 'border-gray-300' : 'border-gray-200'
+              } hover:shadow-xl transition-all duration-300`}
+            >
               {service.popular && (
                 <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white">
                   Most Popular
@@ -142,14 +147,18 @@ const Services = () => {
                 <CardTitle className="text-2xl font-bold text-gray-900">{service.title}</CardTitle>
                 <CardDescription className="text-gray-600">{service.subtitle}</CardDescription>
                 <div className="mt-4">
-                  <div className="text-lg font-semibold text-gray-700 mb-1">{service.credits} Credit{service.credits > 1 ? 's' : ''}</div>
+                  <div className="text-lg font-semibold text-gray-700 mb-1">
+                    {service.credits} Credit{service.credits > 1 ? 's' : ''}
+                  </div>
                   {service.isFree ? (
                     <span className="text-4xl font-bold text-green-600">FREE</span>
                   ) : (
                     <span className="text-4xl font-bold text-blue-600">${service.price}</span>
                   )}
                   {!service.isFree && (
-                    <div className="text-sm text-gray-500 mt-1">(${service.pricePerPhoto.toFixed(2)} per photo)</div>
+                    <div className="text-sm text-gray-500 mt-1">
+                      (${service.pricePerPhoto.toFixed(2)} per photo)
+                    </div>
                   )}
                   {service.savings && (
                     <div className="text-green-600 font-semibold mt-2">{service.savings}</div>
@@ -170,8 +179,17 @@ const Services = () => {
 
               <CardFooter>
                 <Button 
-                  className={`w-full ${service.popular ? 'bg-blue-600 hover:bg-blue-700' : service.bestValue ? 'bg-green-600 hover:bg-green-700' : service.isFree ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-800 hover:bg-gray-900'} text-white`} 
-                  onClick={service.isFree ? handleFreeSignup : () => handlePurchase(service.credits, service.price)}
+                  className={`w-full ${
+                    service.popular ? 'bg-blue-600 hover:bg-blue-700' : 
+                    service.bestValue ? 'bg-green-600 hover:bg-green-700' : 
+                    service.isFree ? 'bg-green-600 hover:bg-green-700' : 
+                    'bg-gray-800 hover:bg-gray-900'
+                  } text-white`} 
+                  onClick={
+                    service.isFree 
+                      ? handleFreeSignup 
+                      : () => handlePurchase(service.id, service.credits, service.price)
+                  }
                 >
                   {service.cta}
                 </Button>

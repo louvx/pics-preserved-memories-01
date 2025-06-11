@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -65,9 +64,9 @@ const FAQ = () => {
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Pricing & Credits</h2>
                 
                 <AccordionItem value="free-credits">
-                  <AccordionTrigger>How do the "free credits" work?</AccordionTrigger>
+                  <AccordionTrigger>How many free credits do I get?</AccordionTrigger>
                   <AccordionContent>
-                    When you sign up, you automatically receive 3 free credits. You can use these to restore 3 photos and see the full results. These free restorations will have a watermark. The goal is to let you try our service risk-free before you decide to buy.
+                    When you sign up, you automatically receive 1 free credit. You can use this to restore 1 photo and see the full results. This free restoration will have a watermark. The goal is to let you try our service risk-free before you decide to buy.
                   </AccordionContent>
                 </AccordionItem>
 

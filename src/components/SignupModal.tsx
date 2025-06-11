@@ -128,8 +128,8 @@ const SignupModal: React.FC<SignupModalProps> = ({
   return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md mx-auto bg-white">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center text-gray-900">
-            Get Your 3 Free Credits
+          <DialogTitle className="text-2xl font-bold text-center text-gray-900 mb-2">
+            Get Your Free Credit
           </DialogTitle>
         </DialogHeader>
         
