@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,7 +24,9 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { remainingRestorations } = useUserCredits(user);
 
   // Mock restoration data for logged-in users
@@ -52,6 +55,7 @@ const Login = () => {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        setIsLoading(false);
         
         if (event === 'SIGNED_IN') {
           toast({
@@ -66,10 +70,31 @@ const Login = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, [toast]);
+
+  // Redirect logged-in users away from auth pages
+  useEffect(() => {
+    if (!isLoading && user) {
+      // User is already logged in, stay on this page (account dashboard)
+      return;
+    }
+  }, [user, isLoading, navigate]);
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-700 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

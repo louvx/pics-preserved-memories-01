@@ -1,14 +1,41 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import SignupModal from './SignupModal';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 const Hero = () => {
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleGetStarted = () => {
-    setIsSignupModalOpen(true);
+    if (user) {
+      // If user is logged in, navigate to account page
+      navigate('/login');
+    } else {
+      // If user is not logged in, show signup modal
+      setIsSignupModalOpen(true);
+    }
   };
 
   const handleSignupSuccess = () => {
@@ -50,7 +77,7 @@ const Hero = () => {
                 onClick={handleGetStarted} 
                 className="bg-amber-700 hover:bg-amber-800 text-white py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 px-[52px]"
               >
-                Restore My Photo For Free
+                {user ? 'My Account' : 'Restore My Photo For Free'}
               </Button>
             </div>
 
