@@ -50,11 +50,10 @@ serve(async (req) => {
 
     console.log("Starting photo restoration for image:", body.imageUrl)
     const output = await replicate.run(
-      "flux-kontext-apps/restore-image:dd7a7ed8a9bbbc40cf6c1d7bb5e3fc3e1d8aa936b92a38c3cf7c52ad8d9cffc3",
+      "flux-kontext-apps/restore-image",
       {
         input: {
-          image: body.imageUrl,
-          scale_factor: 2
+          input_image: body.imageUrl
         }
       }
     )
