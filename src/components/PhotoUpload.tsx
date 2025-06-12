@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -72,7 +71,33 @@ const PhotoUpload = () => {
     });
   };
 
-  const simulateRestoration = async () => {
+  const uploadImageToStorage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `uploads/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('photo-uploads')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error('Upload error:', error);
+        return null;
+      }
+
+      const { data: publicUrl } = supabase.storage
+        .from('photo-uploads')
+        .getPublicUrl(filePath);
+
+      return publicUrl.publicUrl;
+    } catch (error) {
+      console.error('Storage error:', error);
+      return null;
+    }
+  };
+
+  const restorePhoto = async () => {
     if (!uploadedImage) return;
 
     // Check if user is logged in
@@ -109,6 +134,18 @@ const PhotoUpload = () => {
         return;
       }
 
+      // Upload image to storage to get a public URL
+      const imageUrl = await uploadImageToStorage(uploadedImage.file);
+      if (!imageUrl) {
+        toast({
+          title: "Upload failed",
+          description: "Failed to upload image. Please try again.",
+          variant: "destructive"
+        });
+        setIsProcessing(false);
+        return;
+      }
+
       // Save restoration record to database
       try {
         const { error: insertError } = await supabase
@@ -127,19 +164,40 @@ const PhotoUpload = () => {
         // Continue with restoration even if DB save fails
       }
 
-      // Simulate processing time with realistic progress
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // Use the demo restored image
-      setUploadedImage(prev => prev ? {
-        ...prev,
-        processed: "/lovable-uploads/ef7b6917-efe1-4e89-a350-ef968ab28d40.png"
-      } : null);
-
-      toast({
-        title: "Restoration complete!",
-        description: isFreeUser ? "Your photo has been restored with watermark. Purchase credits to remove it." : "Your photo has been successfully restored"
+      // Call Replicate API for photo restoration
+      const { data, error } = await supabase.functions.invoke('restore-photo', {
+        body: { imageUrl }
       });
+
+      if (error) {
+        console.error('Restoration error:', error);
+        toast({
+          title: "Restoration failed",
+          description: "Failed to restore photo. Please try again.",
+          variant: "destructive"
+        });
+        setIsProcessing(false);
+        return;
+      }
+
+      // Set the restored image
+      if (data?.output && Array.isArray(data.output) && data.output.length > 0) {
+        setUploadedImage(prev => prev ? {
+          ...prev,
+          processed: data.output[0]
+        } : null);
+
+        toast({
+          title: "Restoration complete!",
+          description: isFreeUser ? "Your photo has been restored with watermark. Purchase credits to remove it." : "Your photo has been successfully restored"
+        });
+      } else {
+        toast({
+          title: "Restoration failed",
+          description: "No restored image was returned. Please try again.",
+          variant: "destructive"
+        });
+      }
 
       // Refresh credits to show updated count
       refetchCredits();
@@ -306,7 +364,7 @@ const PhotoUpload = () => {
                   isProcessing={isProcessing} 
                   user={user} 
                   remainingRestorations={remainingRestorations} 
-                  onStartRestoration={simulateRestoration} 
+                  onStartRestoration={restorePhoto} 
                   onDownload={downloadRestored} 
                   onReset={resetUpload} 
                 />
