@@ -158,18 +158,25 @@ const PhotoUpload = () => {
 
       console.log('Uploaded image URL:', imageUrl);
 
-      // Save restoration record to database
+      // Save restoration record to database with original filename
+      let restorationId = null;
       try {
-        const { error: insertError } = await supabase
+        const { data: restorationData, error: insertError } = await supabase
           .from('photo_restorations')
           .insert({
             user_id: user.id,
             filename: uploadedImage.file.name,
+            original_filename: uploadedImage.file.name,
             status: 'processing'
-          });
+          })
+          .select()
+          .single();
 
         if (insertError) {
           console.error('Error saving restoration:', insertError);
+        } else {
+          restorationId = restorationData?.id;
+          console.log('Restoration record created:', restorationId);
         }
       } catch (dbError) {
         console.error('Database error:', dbError);
@@ -218,6 +225,25 @@ const PhotoUpload = () => {
             s3Url: data.s3Url,
             filename: data.filename
           } : null);
+
+          // Update the restoration record with completion details
+          if (restorationId) {
+            try {
+              await supabase
+                .from('photo_restorations')
+                .update({
+                  status: 'completed',
+                  restored_image_url: restoredImageUrl,
+                  s3_url: data.s3Url,
+                  processed_filename: data.filename
+                })
+                .eq('id', restorationId);
+              
+              console.log('Restoration record updated with completion details');
+            } catch (updateError) {
+              console.error('Error updating restoration record:', updateError);
+            }
+          }
 
           toast({
             title: "Restoration complete!",

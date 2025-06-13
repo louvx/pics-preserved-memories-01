@@ -75,6 +75,14 @@ const Header = () => {
             >
               FAQ
             </Link>
+            {user && (
+              <Link 
+                to="/dashboard" 
+                className="text-gray-700 hover:text-amber-700 transition-colors font-medium"
+              >
+                My Restorations
+              </Link>
+            )}
           </nav>
 
           {/* Right side - Credits & User Account & CTA */}
