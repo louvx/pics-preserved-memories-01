@@ -67,11 +67,11 @@ const WatermarkedBeforeAfterSlider: React.FC<WatermarkedBeforeAfterSliderProps> 
       onMouseUp={handleMouseUp}
     >
       {/* After image (background) */}
-      <div className="relative">
+      <div className="relative w-full h-full">
         <img 
           src={afterImage}
           alt={`${alt} - after`}
-          className="w-full h-64 object-cover"
+          className="w-full h-full object-cover"
           draggable={false}
         />
         
@@ -95,7 +95,7 @@ const WatermarkedBeforeAfterSlider: React.FC<WatermarkedBeforeAfterSliderProps> 
       <img 
         src={beforeImage}
         alt={`${alt} - before`}
-        className="absolute inset-0 w-full h-64 object-cover"
+        className="absolute inset-0 w-full h-full object-cover"
         style={{
           clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`
         }}

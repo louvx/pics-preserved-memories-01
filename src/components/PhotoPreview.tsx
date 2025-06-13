@@ -9,6 +9,7 @@ interface UploadedImage {
   preview: string;
   processed?: string;
   watermarkRemoved?: boolean;
+  aspectRatio?: number;
 }
 
 interface PhotoPreviewProps {
@@ -26,6 +27,22 @@ const PhotoPreview: React.FC<PhotoPreviewProps> = ({
   onRemoveWatermark,
   onDownloadHD 
 }) => {
+  // Calculate dynamic height based on aspect ratio
+  const getImageContainerStyle = () => {
+    if (uploadedImage.aspectRatio) {
+      const maxWidth = 448; // max-w-md (28rem = 448px)
+      const height = maxWidth / uploadedImage.aspectRatio;
+      return {
+        width: maxWidth,
+        height: Math.min(height, 400), // Cap height at 400px
+        aspectRatio: uploadedImage.aspectRatio
+      };
+    }
+    return {
+      height: 256 // h-64 default
+    };
+  };
+
   return (
     <div className="mb-8">
       <h3 className="text-lg font-semibold mb-4 text-center">
@@ -34,7 +51,10 @@ const PhotoPreview: React.FC<PhotoPreviewProps> = ({
       
       {isProcessing ? (
         <div className="w-full max-w-md mx-auto">
-          <div className="w-full h-64 bg-gray-100 rounded-lg shadow-md flex items-center justify-center">
+          <div 
+            className="w-full bg-gray-100 rounded-lg shadow-md flex items-center justify-center"
+            style={getImageContainerStyle()}
+          >
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-600" />
               <p className="text-gray-600">Restoring your memory...</p>
@@ -46,13 +66,15 @@ const PhotoPreview: React.FC<PhotoPreviewProps> = ({
         </div>
       ) : uploadedImage.processed ? (
         <div className="max-w-md mx-auto space-y-4">
-          <WatermarkedBeforeAfterSlider
-            beforeImage={uploadedImage.preview}
-            afterImage={uploadedImage.processed}
-            showWatermark={isFreeUser && !uploadedImage.watermarkRemoved}
-            alt="Photo restoration"
-            className="w-full"
-          />
+          <div style={getImageContainerStyle()} className="mx-auto">
+            <WatermarkedBeforeAfterSlider
+              beforeImage={uploadedImage.preview}
+              afterImage={uploadedImage.processed}
+              showWatermark={isFreeUser && !uploadedImage.watermarkRemoved}
+              alt="Photo restoration"
+              className="w-full h-full"
+            />
+          </div>
           
           {/* Action Button */}
           <div className="text-center">
@@ -84,7 +106,8 @@ const PhotoPreview: React.FC<PhotoPreviewProps> = ({
             <img 
               src={uploadedImage.preview} 
               alt="Original photo" 
-              className="w-full h-64 object-cover rounded-lg shadow-md" 
+              className="w-full rounded-lg shadow-md object-cover" 
+              style={getImageContainerStyle()}
             />
             <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-sm">
               Ready for Restoration

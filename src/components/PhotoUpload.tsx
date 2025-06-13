@@ -14,6 +14,7 @@ interface UploadedImage {
   preview: string;
   processed?: string;
   watermarkRemoved?: boolean;
+  aspectRatio?: number;
 }
 
 const PhotoUpload = () => {
@@ -63,7 +64,14 @@ const PhotoUpload = () => {
     }
 
     const preview = URL.createObjectURL(file);
-    setUploadedImage({ file, preview });
+    
+    // Calculate aspect ratio from the image
+    const img = new Image();
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      setUploadedImage({ file, preview, aspectRatio });
+    };
+    img.src = preview;
     
     toast({
       title: "Photo uploaded",
@@ -146,6 +154,8 @@ const PhotoUpload = () => {
         return;
       }
 
+      console.log('Uploaded image URL:', imageUrl);
+
       // Save restoration record to database
       try {
         const { error: insertError } = await supabase
@@ -165,33 +175,60 @@ const PhotoUpload = () => {
       }
 
       // Call Replicate API for photo restoration
+      console.log('Calling restore-photo function with:', { imageUrl });
+      
       const { data, error } = await supabase.functions.invoke('restore-photo', {
         body: { imageUrl }
       });
+
+      console.log('Restoration API response:', { data, error });
 
       if (error) {
         console.error('Restoration error:', error);
         toast({
           title: "Restoration failed",
-          description: "Failed to restore photo. Please try again.",
+          description: error.message || "Failed to restore photo. Please try again.",
           variant: "destructive"
         });
         setIsProcessing(false);
         return;
       }
 
-      // Set the restored image
-      if (data?.output && Array.isArray(data.output) && data.output.length > 0) {
-        setUploadedImage(prev => prev ? {
-          ...prev,
-          processed: data.output[0]
-        } : null);
+      // Handle the restored image response
+      if (data?.output) {
+        let restoredImageUrl = null;
+        
+        // Handle different response formats from Replicate
+        if (typeof data.output === 'string') {
+          restoredImageUrl = data.output;
+        } else if (Array.isArray(data.output) && data.output.length > 0) {
+          restoredImageUrl = data.output[0];
+        } else if (data.output.url) {
+          restoredImageUrl = data.output.url;
+        }
 
-        toast({
-          title: "Restoration complete!",
-          description: isFreeUser ? "Your photo has been restored with watermark. Purchase credits to remove it." : "Your photo has been successfully restored"
-        });
+        console.log('Extracted restored image URL:', restoredImageUrl);
+
+        if (restoredImageUrl) {
+          setUploadedImage(prev => prev ? {
+            ...prev,
+            processed: restoredImageUrl
+          } : null);
+
+          toast({
+            title: "Restoration complete!",
+            description: isFreeUser ? "Your photo has been restored with watermark. Purchase credits to remove it." : "Your photo has been successfully restored"
+          });
+        } else {
+          console.error('No valid URL found in response:', data.output);
+          toast({
+            title: "Restoration failed",
+            description: "No restored image was returned. Please try again.",
+            variant: "destructive"
+          });
+        }
       } else {
+        console.error('No output in response:', data);
         toast({
           title: "Restoration failed",
           description: "No restored image was returned. Please try again.",
