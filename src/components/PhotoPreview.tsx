@@ -10,6 +10,8 @@ interface UploadedImage {
   processed?: string;
   watermarkRemoved?: boolean;
   aspectRatio?: number;
+  s3Url?: string;
+  filename?: string;
 }
 
 interface PhotoPreviewProps {
@@ -30,16 +32,18 @@ const PhotoPreview: React.FC<PhotoPreviewProps> = ({
   // Calculate dynamic height based on aspect ratio
   const getImageContainerStyle = () => {
     if (uploadedImage.aspectRatio) {
-      const maxWidth = 448; // max-w-md (28rem = 448px)
+      const maxWidth = 600; // Increased from 448px for better viewing
       const height = maxWidth / uploadedImage.aspectRatio;
       return {
-        width: maxWidth,
-        height: Math.min(height, 400), // Cap height at 400px
-        aspectRatio: uploadedImage.aspectRatio
+        width: '100%',
+        maxWidth: `${maxWidth}px`,
+        height: `${Math.min(height, 500)}px`, // Cap height at 500px
+        aspectRatio: uploadedImage.aspectRatio.toString()
       };
     }
     return {
-      height: 256 // h-64 default
+      width: '100%',
+      height: '400px' // Default height
     };
   };
 
@@ -50,9 +54,9 @@ const PhotoPreview: React.FC<PhotoPreviewProps> = ({
       </h3>
       
       {isProcessing ? (
-        <div className="w-full max-w-md mx-auto">
+        <div className="w-full mx-auto flex justify-center">
           <div 
-            className="w-full bg-gray-100 rounded-lg shadow-md flex items-center justify-center"
+            className="bg-gray-100 rounded-lg shadow-md flex items-center justify-center"
             style={getImageContainerStyle()}
           >
             <div className="text-center">
@@ -65,14 +69,14 @@ const PhotoPreview: React.FC<PhotoPreviewProps> = ({
           </div>
         </div>
       ) : uploadedImage.processed ? (
-        <div className="max-w-md mx-auto space-y-4">
+        <div className="mx-auto space-y-4" style={{ maxWidth: '600px' }}>
           <div style={getImageContainerStyle()} className="mx-auto">
             <WatermarkedBeforeAfterSlider
               beforeImage={uploadedImage.preview}
               afterImage={uploadedImage.processed}
               showWatermark={isFreeUser && !uploadedImage.watermarkRemoved}
               alt="Photo restoration"
-              className="w-full h-full"
+              className="w-full h-full rounded-lg overflow-hidden"
             />
           </div>
           
@@ -101,13 +105,12 @@ const PhotoPreview: React.FC<PhotoPreviewProps> = ({
           </div>
         </div>
       ) : (
-        <div className="max-w-md mx-auto">
-          <div className="relative">
+        <div className="mx-auto flex justify-center">
+          <div className="relative" style={getImageContainerStyle()}>
             <img 
               src={uploadedImage.preview} 
               alt="Original photo" 
-              className="w-full rounded-lg shadow-md object-cover" 
-              style={getImageContainerStyle()}
+              className="w-full h-full rounded-lg shadow-md object-cover" 
             />
             <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-sm">
               Ready for Restoration

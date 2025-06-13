@@ -62,9 +62,10 @@ const WatermarkedBeforeAfterSlider: React.FC<WatermarkedBeforeAfterSliderProps> 
   return (
     <div 
       ref={containerRef}
-      className={`relative overflow-hidden rounded-lg shadow-md cursor-pointer select-none ${className}`}
+      className={`relative overflow-hidden shadow-md cursor-pointer select-none ${className}`}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      style={{ width: '100%', height: '100%' }}
     >
       {/* After image (background) */}
       <div className="relative w-full h-full">

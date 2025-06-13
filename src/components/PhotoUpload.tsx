@@ -15,6 +15,8 @@ interface UploadedImage {
   processed?: string;
   watermarkRemoved?: boolean;
   aspectRatio?: number;
+  s3Url?: string;
+  filename?: string;
 }
 
 const PhotoUpload = () => {
@@ -212,7 +214,9 @@ const PhotoUpload = () => {
         if (restoredImageUrl) {
           setUploadedImage(prev => prev ? {
             ...prev,
-            processed: restoredImageUrl
+            processed: restoredImageUrl,
+            s3Url: data.s3Url,
+            filename: data.filename
           } : null);
 
           toast({
@@ -324,19 +328,55 @@ const PhotoUpload = () => {
     }
   };
 
-  const downloadRestored = () => {
-    if (!uploadedImage?.processed) return;
+  const downloadRestored = async () => {
+    if (!uploadedImage?.s3Url) {
+      // Fallback to processed URL if S3 URL is not available
+      if (!uploadedImage?.processed) return;
+      
+      const link = document.createElement('a');
+      link.href = uploadedImage.processed;
+      link.download = `restored_${uploadedImage.file.name}`;
+      link.click();
+      
+      toast({
+        title: "Download started",
+        description: "Your restored photo is being downloaded"
+      });
+      return;
+    }
 
-    // In a real app, this would download the actual restored image
-    const link = document.createElement('a');
-    link.href = uploadedImage.processed;
-    link.download = `restored_${uploadedImage.file.name}`;
-    link.click();
-    
-    toast({
-      title: "Download started",
-      description: "Your restored photo is being downloaded"
-    });
+    try {
+      // Download from S3 URL
+      const response = await fetch(uploadedImage.s3Url);
+      if (!response.ok) {
+        throw new Error('Failed to download image');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = uploadedImage.filename || `restored_${uploadedImage.file.name}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the blob URL
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Download started",
+        description: "Your restored photo is being downloaded"
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download failed",
+        description: "Failed to download the image. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const resetUpload = () => {
