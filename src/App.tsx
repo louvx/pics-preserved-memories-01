@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,6 +12,9 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import FAQ from "./pages/FAQ";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 
 const queryClient = new QueryClient();
 
@@ -31,9 +33,12 @@ const App: React.FC = () => {
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <CookieConsentBanner />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
