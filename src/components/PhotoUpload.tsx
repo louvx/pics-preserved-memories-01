@@ -213,10 +213,14 @@ const PhotoUpload = () => {
       console.log('Restoration API response:', { data, error });
 
       if (error) {
-        console.error('Restoration error:', error);
+        // New: Check for an error message in the returned data and show it to the user
+        let errorMsg = error.message || "Failed to restore photo. Please try again.";
+        if (data && data.error) {
+          errorMsg = data.error;
+        }
         toast({
           title: "Restoration failed",
-          description: error.message || "Failed to restore photo. Please try again.",
+          description: errorMsg,
           variant: "destructive"
         });
         setIsProcessing(false);
@@ -288,13 +292,14 @@ const PhotoUpload = () => {
 
       // Refresh credits to show updated count
       refetchCredits();
-    } catch (error) {
-      console.error('Restoration error:', error);
+    } catch (error: any) {
+      // New: Show the actual exception message if available
       toast({
         title: "Error",
-        description: "Failed to process restoration. Please try again.",
+        description: error?.message || "Failed to process restoration. Please try again.",
         variant: "destructive"
       });
+      console.error('Restoration error:', error);
     } finally {
       setIsProcessing(false);
     }
