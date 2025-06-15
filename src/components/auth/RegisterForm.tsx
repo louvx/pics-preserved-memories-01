@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +16,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onShowCheckEmail }) => {
   const [registerPassword, setRegisterPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const { toast } = useToast();
+  const [sendingWelcome, setSendingWelcome] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +54,32 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onShowCheckEmail }) => {
         variant: "destructive"
       });
     } else {
+      // Send the Brevo welcome email on successful registration.
+      setSendingWelcome(true);
+      try {
+        await fetch(
+          "https://jlcjlskwxunwnelmpjqq.functions.supabase.co/send-welcome-email",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: registerEmail,
+              name: registerName,
+            }),
+          }
+        );
+        // Don't need to await or display error for the welcome email; it's a best-effort notification.
+      } catch (err) {
+        console.error("Welcome email failed to send via Brevo:", err);
+        // Optionally, show a non-blocking toast
+        toast({
+          title: "Notice",
+          description: "Signup succeeded, but our welcome email couldn't be sent.",
+          variant: "default",
+        });
+      }
+      setSendingWelcome(false);
+
       onShowCheckEmail(registerEmail);
       toast({
         title: "Verify your email",
@@ -109,8 +135,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onShowCheckEmail }) => {
             required
           />
         </div>
-        <Button type="submit" className="w-full bg-amber-700 hover:bg-amber-800">
-          Create Account
+        <Button type="submit" className="w-full bg-amber-700 hover:bg-amber-800" disabled={sendingWelcome}>
+          {sendingWelcome ? "Registering..." : "Create Account"}
         </Button>
       </form>
       <SocialLoginButtons />
