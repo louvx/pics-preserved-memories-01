@@ -7,7 +7,7 @@ import PhotoPreview from './PhotoPreview';
 import ActionButtons from './ActionButtons';
 import UpgradePrompt from './UpgradePrompt';
 import PricingModal from './PricingModal';
-import SignupModal from './SignupModal';
+import SignupModalWrapper from './SignupModalWrapper';
 import type { User } from '@supabase/supabase-js';
 import { usePreserveImageUpload } from '@/hooks/usePreserveImageUpload';
 
@@ -464,47 +464,34 @@ const PhotoUpload = () => {
     <>
       <section id="upload" className="bg-gradient-to-br from-orange-50 to-amber-50 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Congratulations Message for logged-in users */}
-          {user && remainingRestorations > 0 && (
-            <div className="text-center mb-8">
-              <div className={`${isFreeUser ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'} border rounded-lg p-4 max-w-2xl mx-auto`}>
-                <h2 className={`text-2xl font-bold ${isFreeUser ? 'text-blue-800' : 'text-green-800'} mb-2`}>
-                  🎉 {isFreeUser ? `Welcome! You have ${remainingRestorations} free restoration credit` : `Congratulations! You have ${remainingRestorations} restoration credit${remainingRestorations > 1 ? 's' : ''}`}
-                </h2>
-                <p className={`${isFreeUser ? 'text-blue-700' : 'text-green-700'}`}>
-                  {isFreeUser 
-                    ? 'Upload your photo below to get a watermarked preview. Purchase credits to download without watermark.'
-                    : 'Upload your photo below to start restoring your precious memories'
-                  }
-                </p>
-              </div>
-            </div>
-          )}
+          {/* Credits/Welcome Banner */}
+          <UploadCreditsBanner user={user} isFreeUser={isFreeUser} remainingRestorations={remainingRestorations} />
 
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {user ? 'Upload Your Photo to Get Started' : 'Get Your Free Preview Instantly'}
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              {user 
-                ? 'Drag & drop your photo here or click to browse. Watch our AI work its magic!'
-                : 'Upload any photo and watch our AI work its magic. You\'ll get a free, watermarked preview in seconds. No credit card required, no strings attached.'
-              }
-            </p>
-          </div>
+          {/* Section Header */}
+          <UploadSectionHeader user={user} />
 
           <div className="bg-white rounded-xl shadow-lg p-8">
             {!uploadedImage ? (
               <PhotoUploadArea onFileUpload={handleFileUpload} />
             ) : (
               <div>
-                <PhotoPreview 
-                  uploadedImage={uploadedImage} 
-                  isProcessing={isProcessing}
-                  isFreeUser={isFreeUser}
-                  onRemoveWatermark={handleRemoveWatermark}
-                  onDownloadHD={downloadRestored}
-                />
+                {/* Custom loader if currently processing */}
+                {isProcessing && uploadedImage.aspectRatio ? (
+                  <div className="w-full mx-auto flex justify-center">
+                    <UploadProcessingOverlay
+                      width={600}
+                      height={600 / uploadedImage.aspectRatio}
+                    />
+                  </div>
+                ) : (
+                  <PhotoPreview 
+                    uploadedImage={uploadedImage} 
+                    isProcessing={isProcessing}
+                    isFreeUser={isFreeUser}
+                    onRemoveWatermark={handleRemoveWatermark}
+                    onDownloadHD={downloadRestored}
+                  />
+                )}
 
                 <ActionButtons 
                   uploadedImage={uploadedImage} 
@@ -533,12 +520,12 @@ const PhotoUpload = () => {
         onPurchase={handlePurchase}
       />
       {/* Signup modal is only triggered from restoration attempt */}
-      <SignupModal 
-        isOpen={showSignupModal} 
+      <SignupModalWrapper 
+        isOpen={showSignupModal}
         onClose={() => {
           setShowSignupModal(false);
           setPendingRestoreAfterSignup(false);
-        }} 
+        }}
         onSuccess={() => {
           setShowSignupModal(false);
           // user state will be updated, restoration will trigger via useEffect above!
