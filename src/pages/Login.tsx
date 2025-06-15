@@ -52,6 +52,40 @@ const Login = () => {
     }
   ]);
 
+  // Handler for sign out
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+    toast({
+      title: "Signed out",
+      description: "You have been signed out."
+    });
+  };
+
+  // Handler for downloading restored image (no-op for mock data)
+  const handleDownload = (restoration: { id: number; originalImage: string; restoredImage: string; hasWatermark: boolean; uploadDate: string; filename: string; }) => {
+    // For demo purposes, simply download the restoredImage url
+    const link = document.createElement('a');
+    link.href = restoration.restoredImage;
+    link.download = `restored_${restoration.filename}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast({
+      title: "Download started",
+      description: "Your restored photo is being downloaded"
+    });
+  };
+
+  // Handler for unlocking watermark (no-op for mock data)
+  const handleUnlockWatermark = (restorationId: number) => {
+    toast({
+      title: "Unlock HD",
+      description: "Feature not implemented in demo."
+    });
+  };
+
   // Set up auth state listener
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
