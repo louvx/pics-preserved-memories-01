@@ -8,6 +8,7 @@ import ActionButtons from './ActionButtons';
 import UpgradePrompt from './UpgradePrompt';
 import PricingModal from './PricingModal';
 import type { User } from '@supabase/supabase-js';
+import { usePreserveImageUpload } from '@/hooks/usePreserveImageUpload';
 
 interface UploadedImage {
   file: File;
@@ -27,6 +28,7 @@ const PhotoUpload = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { remainingRestorations, isFreeUser, packageType, deductCredit, refetchCredits } = useUserCredits(user);
+  const { saveImage, loadImage, clearImage } = usePreserveImageUpload();
 
   // Get current user
   React.useEffect(() => {
@@ -40,6 +42,22 @@ const PhotoUpload = () => {
     
     return () => subscription.unsubscribe();
   }, []);
+
+  // Restore previous image if any immediately after login/signup
+  React.useEffect(() => {
+    if (!uploadedImage && user) {
+      const maybeCached = loadImage();
+      if (maybeCached) {
+        setUploadedImage(maybeCached);
+        clearImage();
+        toast({
+          title: "Photo restored",
+          description: "Picked up where you left off! Click 'Start Restoration' to continue.",
+        });
+      }
+    }
+    // eslint-disable-next-line
+  }, [user]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -68,10 +86,13 @@ const PhotoUpload = () => {
     const preview = URL.createObjectURL(file);
     
     // Calculate aspect ratio from the image
-    const img = new Image();
+    const img = new window.Image();
     img.onload = () => {
       const aspectRatio = img.width / img.height;
       setUploadedImage({ file, preview, aspectRatio });
+      if (!user) {
+        saveImage(file, aspectRatio);
+      }
     };
     img.src = preview;
     
@@ -107,10 +128,15 @@ const PhotoUpload = () => {
     }
   };
 
+  // Show upgrade modal automatically if out of credits (both on upload and when trying restoration)
+  React.useEffect(() => {
+    if (user && remainingRestorations <= 0 && !isProcessing) {
+      setIsPricingModalOpen(true);
+    }
+  }, [user, remainingRestorations, isProcessing]);
+
   const restorePhoto = async () => {
     if (!uploadedImage) return;
-
-    // Check if user is logged in
     if (!user) {
       toast({
         title: "Login required",
@@ -119,14 +145,8 @@ const PhotoUpload = () => {
       });
       return;
     }
-
-    // Check if user has remaining restorations
     if (remainingRestorations <= 0) {
-      toast({
-        title: "No restorations left",
-        description: "You have used all your restorations. Please upgrade to continue.",
-        variant: "destructive"
-      });
+      setIsPricingModalOpen(true);
       return;
     }
 
@@ -355,6 +375,10 @@ const PhotoUpload = () => {
   };
 
   const downloadRestored = async () => {
+    if (remainingRestorations <= 0 && isFreeUser) {
+      setIsPricingModalOpen(true);
+      return;
+    }
     if (!uploadedImage?.s3Url) {
       // Fallback to processed URL if S3 URL is not available
       if (!uploadedImage?.processed) return;

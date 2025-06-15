@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,15 +7,19 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Download, Calendar, Image, ArrowLeft } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
+import { toast as sonnerToast } from 'sonner';
 
 interface Restoration {
   id: string;
-  original_filename: string;
-  processed_filename: string;
-  restored_image_url: string;
-  s3_url: string;
+  original_filename?: string;
+  processed_filename?: string;
+  restored_image_url?: string;
+  s3_url?: string;
   status: string;
   created_at: string;
+  user_id?: string;
+  filename?: string;
+  updated_at?: string;
 }
 
 const Dashboard = () => {
@@ -84,15 +87,15 @@ const Dashboard = () => {
 
   const downloadRestoration = async (restoration: Restoration) => {
     if (!restoration.s3_url) {
-      // Fallback to restored image URL
+      // Fallback to restored image
       if (restoration.restored_image_url) {
         const link = document.createElement('a');
         link.href = restoration.restored_image_url;
         link.download = restoration.processed_filename || 'restored-image.png';
         link.click();
+        sonnerToast('Download started. Hope you love your result! Share your before/after with friends, or let us know your feedback.');
         return;
       }
-      
       toast({
         title: "Error",
         description: "Download URL not available",
@@ -100,29 +103,24 @@ const Dashboard = () => {
       });
       return;
     }
-
     try {
       const response = await fetch(restoration.s3_url);
-      if (!response.ok) {
-        throw new Error('Failed to download image');
-      }
-
+      if (!response.ok) throw new Error('Failed to download image');
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      
       const link = document.createElement('a');
       link.href = url;
       link.download = restoration.processed_filename || 'restored-image.png';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
       window.URL.revokeObjectURL(url);
-      
       toast({
         title: "Download started",
         description: "Your restored photo is being downloaded"
       });
+      // New: Show share/feedback toast!
+      sonnerToast('Thanks for using Restore.pics! Enjoy your photo? Share before/after with others or leave us feedback via email.');
     } catch (error) {
       console.error('Download error:', error);
       toast({

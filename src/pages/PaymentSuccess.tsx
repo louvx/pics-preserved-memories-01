@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -76,6 +75,14 @@ const PaymentSuccess = () => {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   Start Restoring Photos
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full"
+                >
+                  View My Restorations
                 </Button>
                 
                 <Button 
