@@ -16,31 +16,37 @@ serve(async (req) => {
   }
 
   try {
+    // Use Cloudflare R2 secrets
     const REPLICATE_API_KEY = Deno.env.get('REPLICATE_API_KEY')
-    const AWS_ACCESS_KEY_ID = Deno.env.get('AWS_ACCESS_KEY_ID')
-    const AWS_SECRET_ACCESS_KEY = Deno.env.get('AWS_SECRET_ACCESS_KEY')
-    const AWS_REGION = Deno.env.get('AWS_REGION')
-    const AWS_S3_BUCKET_NAME = Deno.env.get('AWS_S3_BUCKET_NAME')
+    const R2_ACCOUNT_ID = Deno.env.get('R2_ACCOUNT_ID')
+    const R2_ACCESS_KEY_ID = Deno.env.get('R2_ACCESS_KEY_ID')
+    const R2_SECRET_ACCESS_KEY = Deno.env.get('R2_SECRET_ACCESS_KEY')
+    const R2_BUCKET_NAME = Deno.env.get('R2_BUCKET_NAME')
+    // Endpoint typically: https://<accountid>.r2.cloudflarestorage.com
+    const R2_ENDPOINT = Deno.env.get('R2_ENDPOINT') 
 
     if (!REPLICATE_API_KEY) {
       throw new Error('REPLICATE_API_KEY is not set')
     }
 
-    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_REGION || !AWS_S3_BUCKET_NAME) {
-      throw new Error('AWS credentials are not properly configured')
+    // Check all R2 keys are set
+    if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME || !R2_ENDPOINT) {
+      throw new Error('Cloudflare R2 credentials are not properly configured')
     }
 
     const replicate = new Replicate({
       auth: REPLICATE_API_KEY,
     })
 
-    // Initialize S3 client
+    // Initialize S3 client for R2
     const s3Client = new S3Client({
-      region: AWS_REGION,
+      region: 'auto', // R2 ignores region, but you must provide it
+      endpoint: R2_ENDPOINT,
       credentials: {
-        accessKeyId: AWS_ACCESS_KEY_ID,
-        secretAccessKey: AWS_SECRET_ACCESS_KEY,
+        accessKeyId: R2_ACCESS_KEY_ID,
+        secretAccessKey: R2_SECRET_ACCESS_KEY,
       },
+      forcePathStyle: true, // Critical for R2 compatibility!
     })
 
     const body = await req.json()
@@ -79,7 +85,7 @@ serve(async (req) => {
 
     console.log("Restoration response:", output)
 
-    // Handle the restored image and upload to S3
+    // Handle the restored image and upload to R2
     if (output) {
       let restoredImageUrl = null;
       
@@ -107,13 +113,13 @@ serve(async (req) => {
           // Generate a unique filename
           const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
           const filename = `restored-${timestamp}.png`
-          const s3Key = `restored-photos/${filename}`
+          const r2Key = `restored-photos/${filename}`
 
-          // Upload to S3
-          console.log("Uploading to S3:", s3Key)
+          // Upload to R2
+          console.log("Uploading to R2:", r2Key)
           const uploadCommand = new PutObjectCommand({
-            Bucket: AWS_S3_BUCKET_NAME,
-            Key: s3Key,
+            Bucket: R2_BUCKET_NAME,
+            Key: r2Key,
             Body: imageUint8Array,
             ContentType: 'image/png',
             ContentDisposition: 'attachment'
@@ -121,22 +127,24 @@ serve(async (req) => {
 
           await s3Client.send(uploadCommand)
 
-          // Generate S3 URL
-          const s3Url = `https://${AWS_S3_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${s3Key}`
+          // Generate R2 public URL
+          // The canonical R2 public URL is typically:
+          //   https://<accountid>.r2.cloudflarestorage.com/<bucket>/<key>
+          const r2Url = `${R2_ENDPOINT.replace(/\/$/, '')}/${R2_BUCKET_NAME}/${r2Key}`
           
-          console.log("Image uploaded to S3:", s3Url)
+          console.log("Image uploaded to R2:", r2Url)
 
           return new Response(JSON.stringify({ 
             output: restoredImageUrl, // Keep original for preview
-            s3Url: s3Url, // Add S3 URL for download
+            s3Url: r2Url, // For backward compatibility in frontend
             filename: filename
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
           })
         } catch (s3Error) {
-          console.error("S3 upload error:", s3Error)
-          // Still return the original output even if S3 fails
+          console.error("R2 (S3) upload error:", s3Error)
+          // Still return the original output even if R2 fails
           return new Response(JSON.stringify({ 
             output: restoredImageUrl,
             s3Error: s3Error.message
