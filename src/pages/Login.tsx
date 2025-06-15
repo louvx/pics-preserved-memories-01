@@ -96,6 +96,11 @@ const Login = () => {
     );
   }
 
+  // Add UI state for registration info message and resend flow
+  const [showRegisterInfo, setShowRegisterInfo] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginEmail || !loginPassword) {
@@ -113,6 +118,47 @@ const Login = () => {
     });
 
     if (error) {
+      // Supabase returns "Email not confirmed" error for unverified users
+      if (
+        error.message &&
+        (error.message.toLowerCase().includes("email not confirmed") ||
+          error.message.toLowerCase().includes("email confirmation") ||
+          error.message.toLowerCase().includes("confirm your email"))
+      ) {
+        toast({
+          title: "Email not verified",
+          description: (
+            <span>
+              Your account is not active yet.<br />
+              Please check your email inbox (and spam folder) and verify your email address.<br />
+              <span
+                className="underline cursor-pointer text-amber-700"
+                onClick={async () => {
+                  setResendLoading(true);
+                  const { error: resendErr } = await supabase.auth.resend({
+                    type: "signup",
+                    email: loginEmail,
+                  });
+                  setResendLoading(false);
+                  toast({
+                    title: resendErr
+                      ? "Resend failed"
+                      : "Verification Sent",
+                    description: resendErr
+                      ? resendErr.message
+                      : "A new verification email has been sent. Please check your inbox.",
+                    variant: resendErr ? "destructive" : "default",
+                  });
+                }}
+              >
+                {resendLoading ? "Sending..." : "Resend verification email"}
+              </span>
+            </span>
+          ),
+          variant: "destructive"
+        });
+        return;
+      }
       toast({
         title: "Login failed",
         description: error.message,
@@ -159,9 +205,13 @@ const Login = () => {
         variant: "destructive"
       });
     } else {
+      // Immediately prompt to check email and block tab switch away from info
+      setShowRegisterInfo(true);
+      setResendEmail(registerEmail);
       toast({
-        title: "Account created",
-        description: "Please check your email to verify your account."
+        title: "Verify your email",
+        description:
+          "Please check your email inbox (and spam/junk folders) to verify your account before logging in."
       });
     }
   };
@@ -255,7 +305,49 @@ const Login = () => {
               </TabsList>
               
               <TabsContent value="results" className="mt-8">
-                {/* ... keep existing code (restorations display logic) */}
+                {restorations.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {restorations.map((restoration) => (
+                      <Card key={restoration.id} className="bg-white shadow-md rounded-lg overflow-hidden">
+                        <div className="relative">
+                          <img
+                            src={restoration.restoredImage}
+                            alt={`Restored ${restoration.filename}`}
+                            className="w-full h-64 object-cover"
+                          />
+                          {restoration.hasWatermark && (
+                            <div className="absolute top-0 left-0 w-full h-full bg-white/70 flex items-center justify-center">
+                              <span className="text-2xl font-bold text-gray-800">Watermark</span>
+                            </div>
+                          )}
+                        </div>
+                        <CardContent className="p-4">
+                          <CardTitle className="text-lg font-semibold text-gray-900">
+                            {restoration.filename}
+                          </CardTitle>
+                          <CardDescription className="text-gray-600">
+                            Uploaded on {restoration.uploadDate}
+                          </CardDescription>
+                        </CardContent>
+                        <CardFooter className="flex justify-between items-center p-4">
+                          <Button onClick={() => handleDownload(restoration)} variant="outline">
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </Button>
+                          {restoration.hasWatermark && (
+                            <Button onClick={() => handleUnlockWatermark(restoration.id)} variant="secondary">
+                              Unlock HD
+                            </Button>
+                          )}
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600 text-lg">No restorations yet. Upload a photo to get started!</p>
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>
@@ -266,139 +358,186 @@ const Login = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
-      <Header />
-      
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-md mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Welcome to Photo Restoration
-            </h1>
-            <p className="text-xl text-gray-600">
-              Sign in to your account or create a new one to start restoring your precious memories.
-            </p>
-          </div>
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+        <Header />
 
-          {/* Login/Register Section */}
-          <Card className="w-full bg-white shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold text-gray-900">
-                Welcome Back
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                Sign in to your account or create a new one
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent>
-              <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="login">Sign In</TabsTrigger>
-                  <TabsTrigger value="register">Create Account</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="login" className="space-y-4">
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">Email</Label>
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="login-password">Password</Label>
-                      <Input
-                        id="login-password"
-                        type="password"
-                        placeholder="Enter your password"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <Button type="submit" className="w-full bg-amber-700 hover:bg-amber-800">
-                      Sign In
-                    </Button>
-                  </form>
-                  
-                  <SocialLoginButtons />
-                </TabsContent>
-                
-                <TabsContent value="register" className="space-y-4">
-                  <form onSubmit={handleRegister} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="register-name">Full Name</Label>
-                      <Input
-                        id="register-name"
-                        type="text"
-                        placeholder="Enter your full name"
-                        value={registerName}
-                        onChange={(e) => setRegisterName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email">Email</Label>
-                      <Input
-                        id="register-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={registerEmail}
-                        onChange={(e) => setRegisterEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password">Password</Label>
-                      <Input
-                        id="register-password"
-                        type="password"
-                        placeholder="Create a password"
-                        value={registerPassword}
-                        onChange={(e) => setRegisterPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirm Password</Label>
-                      <Input
-                        id="confirm-password"
-                        type="password"
-                        placeholder="Confirm your password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <Button type="submit" className="w-full bg-amber-700 hover:bg-amber-800">
-                      Create Account
-                    </Button>
-                  </form>
-                  
-                  <SocialLoginButtons />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-            
-            <CardFooter className="text-center text-sm text-gray-600">
-              <p>
-                By continuing, you agree to our Terms of Service and Privacy Policy
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-md mx-auto">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                Welcome to Photo Restoration
+              </h1>
+              <p className="text-xl text-gray-600">
+                Sign in to your account or create a new one to start restoring your precious memories.
               </p>
-            </CardFooter>
-          </Card>
-        </div>
-      </div>
+            </div>
 
-      <Footer />
-    </div>
-  );
+            {/* Login/Register Section */}
+            <Card className="w-full bg-white shadow-lg">
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl font-bold text-gray-900">
+                  Welcome Back
+                </CardTitle>
+                <CardDescription className="text-gray-600">
+                  Sign in to your account or create a new one
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent>
+                {showRegisterInfo ? (
+                  <div className="flex flex-col items-center space-y-6 py-8">
+                    <div className="bg-amber-50 border-amber-300 border rounded-lg px-6 py-5 text-center">
+                      <h2 className="text-xl font-semibold text-amber-800 mb-2">
+                        Check your email to verify your account!
+                      </h2>
+                      <p className="text-amber-700 mb-2">
+                        We sent a verification link to: <b>{resendEmail}</b>
+                      </p>
+                      <p className="text-amber-700 mb-2">
+                        Please check your inbox (and spam/junk folders). You must verify your account before logging in.
+                      </p>
+                      <Button
+                        disabled={resendLoading}
+                        variant="outline"
+                        className="mt-2"
+                        onClick={async () => {
+                          setResendLoading(true);
+                          const { error: resendErr } = await supabase.auth.resend({
+                            type: "signup",
+                            email: resendEmail,
+                          });
+                          setResendLoading(false);
+                          toast({
+                            title: resendErr ? "Resend failed" : "Email sent",
+                            description: resendErr
+                              ? resendErr.message
+                              : "A fresh verification email was sent. Please check your email.",
+                            variant: resendErr ? "destructive" : "default",
+                          });
+                        }}
+                      >
+                        {resendLoading ? "Sending..." : "Resend Verification Email"}
+                      </Button>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setShowRegisterInfo(false)}
+                    >
+                      Back to Login
+                    </Button>
+                  </div>
+                ) : (
+                  <Tabs defaultValue="login" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="login">Sign In</TabsTrigger>
+                      <TabsTrigger value="register">Create Account</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="login" className="space-y-4">
+                      <form onSubmit={handleLogin} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="login-email">Email</Label>
+                          <Input
+                            id="login-email"
+                            type="email"
+                            placeholder="Enter your email"
+                            value={loginEmail}
+                            onChange={(e) => setLoginEmail(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="login-password">Password</Label>
+                          <Input
+                            id="login-password"
+                            type="password"
+                            placeholder="Enter your password"
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <Button type="submit" className="w-full bg-amber-700 hover:bg-amber-800">
+                          Sign In
+                        </Button>
+                      </form>
+                      
+                      <SocialLoginButtons />
+                    </TabsContent>
+                    
+                    <TabsContent value="register" className="space-y-4">
+                      <form onSubmit={handleRegister} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="register-name">Full Name</Label>
+                          <Input
+                            id="register-name"
+                            type="text"
+                            placeholder="Enter your full name"
+                            value={registerName}
+                            onChange={(e) => setRegisterName(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="register-email">Email</Label>
+                          <Input
+                            id="register-email"
+                            type="email"
+                            placeholder="Enter your email"
+                            value={registerEmail}
+                            onChange={(e) => setRegisterEmail(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="register-password">Password</Label>
+                          <Input
+                            id="register-password"
+                            type="password"
+                            placeholder="Create a password"
+                            value={registerPassword}
+                            onChange={(e) => setRegisterPassword(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="confirm-password">Confirm Password</Label>
+                          <Input
+                            id="confirm-password"
+                            type="password"
+                            placeholder="Confirm your password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <Button type="submit" className="w-full bg-amber-700 hover:bg-amber-800">
+                          Create Account
+                        </Button>
+                      </form>
+                      
+                      <SocialLoginButtons />
+                    </TabsContent>
+                  </Tabs>
+                )}
+              </CardContent>
+              
+              <CardFooter className="text-center text-sm text-gray-600">
+                <p>
+                  By continuing, you agree to our Terms of Service and Privacy Policy
+                </p>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
 };
 
 export default Login;

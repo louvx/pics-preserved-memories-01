@@ -90,9 +90,7 @@ const SignupModal: React.FC<SignupModalProps> = ({
     }
     setIsLoading(true);
     try {
-      const {
-        error
-      } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -111,7 +109,8 @@ const SignupModal: React.FC<SignupModalProps> = ({
       } else {
         toast({
           title: "Success!",
-          description: "Please check your email to verify your account."
+          description: "Account created! Please check your email inbox (and spam/junk folder) to verify your account before logging in.",
+          // info - not destructive
         });
         onSuccess();
       }
