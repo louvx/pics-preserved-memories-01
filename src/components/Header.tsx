@@ -75,6 +75,12 @@ const Header = () => {
             >
               FAQ
             </Link>
+            <Link 
+              to="/contact"
+              className="text-gray-700 hover:text-amber-700 transition-colors font-medium"
+            >
+              Contact
+            </Link>
             {user && (
               <Link 
                 to="/dashboard" 

@@ -51,6 +51,13 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isMenuOpen, onMenuC
         >
           FAQ
         </Link>
+        <Link 
+          to="/contact"
+          className="text-gray-700 hover:text-amber-700 transition-colors font-medium py-2"
+          onClick={handleLinkClick}
+        >
+          Contact
+        </Link>
         <div className="pt-4 border-t border-gray-100">
           <Button 
             className="w-full bg-amber-700 hover:bg-amber-800 text-white font-medium"
