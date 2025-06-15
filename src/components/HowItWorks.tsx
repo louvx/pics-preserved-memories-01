@@ -6,18 +6,18 @@ const HowItWorks = () => {
   const steps = [
     {
       icon: <Upload className="w-8 h-8 text-white" />,
-      title: "Upload Your Photo",
-      description: "Enter your photo and ensure your details are safe and more secure"
+      title: "Securely Upload Your Photo",
+      description: "Simply drag & drop or select your old photo file. We guarantee all uploads are 100% private and secure."
     },
     {
       icon: <Sparkles className="w-8 h-8 text-white" />,
-      title: "AI Processing",
-      description: "Restoring photos faster & easier with end to end encryption"
+      title: "Witness the AI Magic",
+      description: "Instantly, our advanced AI will analyze, repair, and enhance your photo. You'll immediately see a stunning, watermarked preview of the incredible result."
     },
     {
       icon: <Download className="w-8 h-8 text-white" />,
-      title: "Download Result",
-      description: "Add multiple downloads and track your daily expense with quality interface"
+      title: "Download & Cherish Your Memory",
+      description: "Love what you see? Choose a credit pack to remove the watermark and download your memory in beautiful high resolution. It's now ready to be printed, shared, and cherished forever."
     }
   ];
 
@@ -63,3 +63,4 @@ const HowItWorks = () => {
 };
 
 export default HowItWorks;
+
