@@ -10,6 +10,9 @@ import PricingModal from './PricingModal';
 import SignupModalWrapper from './SignupModalWrapper';
 import type { User } from '@supabase/supabase-js';
 import { usePreserveImageUpload } from '@/hooks/usePreserveImageUpload';
+import UploadCreditsBanner from './UploadCreditsBanner';
+import UploadSectionHeader from './UploadSectionHeader';
+import UploadProcessingOverlay from './UploadProcessingOverlay';
 
 interface UploadedImage {
   file: File;
