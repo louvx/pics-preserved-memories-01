@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -7,17 +8,14 @@ import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 const Hero = () => {
-  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
@@ -27,19 +25,12 @@ const Hero = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Find the photo upload section and scroll smoothly
   const handleGetStarted = () => {
-    if (user) {
-      // If user is logged in, navigate to account page
-      navigate('/login');
-    } else {
-      // If user is not logged in, show signup modal
-      setIsSignupModalOpen(true);
+    const uploadSection = document.getElementById('upload');
+    if (uploadSection) {
+      uploadSection.scrollIntoView({ behavior: 'smooth' });
     }
-  };
-
-  const handleSignupSuccess = () => {
-    setIsSignupModalOpen(false);
-    // Redirect to login/dashboard will be handled by auth state change
   };
 
   return (
@@ -76,7 +67,7 @@ const Hero = () => {
                 onClick={handleGetStarted} 
                 className="bg-amber-700 hover:bg-amber-800 text-white py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 px-[52px]"
               >
-                {user ? 'My Account' : 'Restore My Photo For Free'}
+                Restore My Photo For Free
               </Button>
             </div>
 
@@ -98,12 +89,7 @@ const Hero = () => {
           </div>
         </div>
       </section>
-
-      <SignupModal 
-        isOpen={isSignupModalOpen}
-        onClose={() => setIsSignupModalOpen(false)}
-        onSuccess={handleSignupSuccess}
-      />
+      {/* No signup modal shown from here! Signup modal shown on upload/restore in PhotoUpload section */}
     </>
   );
 };

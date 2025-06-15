@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -29,6 +29,8 @@ const PhotoUpload = () => {
   const { toast } = useToast();
   const { remainingRestorations, isFreeUser, packageType, deductCredit, refetchCredits } = useUserCredits(user);
   const { saveImage, loadImage, clearImage } = usePreserveImageUpload();
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const [pendingRestoreAfterSignup, setPendingRestoreAfterSignup] = useState(false);
 
   // Get current user
   React.useEffect(() => {
@@ -54,6 +56,21 @@ const PhotoUpload = () => {
           title: "Photo restored",
           description: "Picked up where you left off! Click 'Start Restoration' to continue.",
         });
+      }
+    }
+    // eslint-disable-next-line
+  }, [user]);
+
+  // Restore upload after user logs in/signs up & close signup modal
+  useEffect(() => {
+    if (pendingRestoreAfterSignup && user) {
+      setShowSignupModal(false);
+      setPendingRestoreAfterSignup(false);
+      // If upload was preserved, photo restored in next effect below!
+      // (additional logic below)
+      // Start restoration automatically if a cached image exists and not yet restored!
+      if (uploadedImage && !uploadedImage.processed) {
+        restorePhoto();
       }
     }
     // eslint-disable-next-line
@@ -138,11 +155,8 @@ const PhotoUpload = () => {
   const restorePhoto = async () => {
     if (!uploadedImage) return;
     if (!user) {
-      toast({
-        title: "Login required",
-        description: "Please login to restore photos",
-        variant: "destructive"
-      });
+      setShowSignupModal(true);
+      setPendingRestoreAfterSignup(true);
       return;
     }
     if (remainingRestorations <= 0) {
@@ -516,6 +530,18 @@ const PhotoUpload = () => {
         isOpen={isPricingModalOpen}
         onClose={() => setIsPricingModalOpen(false)}
         onPurchase={handlePurchase}
+      />
+      {/* Signup modal is only triggered from restoration attempt */}
+      <SignupModal 
+        isOpen={showSignupModal} 
+        onClose={() => {
+          setShowSignupModal(false);
+          setPendingRestoreAfterSignup(false);
+        }} 
+        onSuccess={() => {
+          setShowSignupModal(false);
+          // user state will be updated, restoration will trigger via useEffect above!
+        }}
       />
     </>
   );
