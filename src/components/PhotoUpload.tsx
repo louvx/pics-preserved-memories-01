@@ -7,6 +7,7 @@ import PhotoPreview from './PhotoPreview';
 import ActionButtons from './ActionButtons';
 import UpgradePrompt from './UpgradePrompt';
 import PricingModal from './PricingModal';
+import SignupModal from './SignupModal';
 import type { User } from '@supabase/supabase-js';
 import { usePreserveImageUpload } from '@/hooks/usePreserveImageUpload';
 
