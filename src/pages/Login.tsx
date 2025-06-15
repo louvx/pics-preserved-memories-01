@@ -32,6 +32,11 @@ const Login = () => {
   const navigate = useNavigate();
   const { remainingRestorations } = useUserCredits(user);
 
+  // MOVE these to the top - before any return!
+  const [showRegisterInfo, setShowRegisterInfo] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
+
   // Step 1: Handler for sign out (must be defined before conditional logic)
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -131,14 +136,6 @@ const Login = () => {
       </div>
     );
   }
-
-  // Separate UI state for "check your email" after registration
-  const [showRegisterInfo, setShowRegisterInfo] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendEmail, setResendEmail] = useState('');
-
-  // -- Handler fns for dashboard that we want to keep as props --
-  // handleSignOut, handleDownload, handleUnlockWatermark etc
 
   // -- User state --
   if (user) {
